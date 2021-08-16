@@ -1,0 +1,45 @@
+.tazapay_form .container {
+  padding: 16px;
+  background-color: white;
+}
+.tazapay_form input[type=text], .tazapay_form select {
+  width: 70%;
+  padding: 10px;
+  margin: 5px 0 5px 0;
+  display: inline-block;
+  border: none;
+  background: #f1f1f1;
+}
+.tazapay_form input[type=text]:focus {
+  background-color: #ddd;
+  outline: none;
+}
+.tazapay_form hr {
+  border: 1px solid #f1f1f1;
+  margin-bottom: 25px;
+}
+.tazapay_form .registerbtn {
+  padding: 16px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: auto;
+  opacity: 0.9;
+  display: block;
+}
+.tazapay_form .registerbtn:hover {
+  opacity: 1;
+}
+.tazapay_form label.error {
+  color: #ff0000;
+}
+.tazapay_form label{
+  display: block;
+}
+body.tazapay-popup header, body.tazapay-popup footer, body.tazapay-popup .woocommerce-breadcrumb{
+  display: none;
+}
+#woocommerce_tz_tazapay_sandbox_api_secret_key, #woocommerce_tz_tazapay_sandbox_api_key, #woocommerce_tz_tazapay_live_api_key, #woocommerce_tz_tazapay_live_api_secret_key{
+-webkit-text-security: disc;
+}
+.tazapayusers .row-actions{ font-size: 12px; }
