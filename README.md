@@ -17,7 +17,7 @@ Download package from https://github.com/tazapay/woocommerce-plugin.git
 
 ## Features
 - Custom TazaPay Payment Gateway
-- Simply craeate account via tazapay site (https://share.hsforms.com/1RcEF-LvgQv-6fArLsYSRwA4qumh) and use API Key and Secret Key in default woocommerce payment tab with tazapay manage.
+- Simply create account via tazapay site (https://share.hsforms.com/1RcEF-LvgQv-6fArLsYSRwA4qumh) and use API Key and Secret Key in default woocommerce payment tab with tazapay manage.
 - Easily manage in checkout page with TazaPay payment method selection.
 - Pay with your TazaPay via our super-cool payment gateway.
 - WeChatPay, Bank Transfer, Mastercard, VISA

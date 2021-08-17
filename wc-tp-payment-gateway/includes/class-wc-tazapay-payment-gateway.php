@@ -23,20 +23,21 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
     
         // Load the settings.
         $this->init_settings();
-        $this->title = $this->get_option( 'title' );
-        $this->description = $this->get_option( 'description' );
-        $this->seller_name = $this->get_option( 'seller_name' );
-        $this->seller_email = $this->get_option( 'seller_email' );
-        $this->seller_type = $this->get_option( 'seller_type' );
-        $this->seller_country = $this->get_option( 'seller_country' );
-        $this->txn_type_escrow = $this->get_option( 'txn_type_escrow' );
-        $this->release_mechanism = $this->get_option( 'release_mechanism' );
-        $this->fee_paid_by = $this->get_option( 'fee_paid_by' );
-        $this->fee_percentage = $this->get_option( 'fee_percentage' );
-        $this->enabled = $this->get_option( 'enabled' );
-        $this->sandboxmode = 'yes' === $this->get_option( 'sandboxmode' );
-        $this->live_api_key = $this->sandboxmode ? $this->get_option( 'sandbox_api_key' ) : $this->get_option( 'live_api_key' );
-        $this->live_api_secret_key = $this->sandboxmode ? $this->get_option( 'sandbox_api_secret_key' ) : $this->get_option( 'live_api_secret_key' );
+        $this->title                = $this->get_option( 'title' );
+        $this->description          = $this->get_option( 'description' );
+        $this->seller_name          = $this->get_option( 'seller_name' );
+        $this->seller_email         = $this->get_option( 'seller_email' );
+        $this->seller_type          = $this->get_option( 'seller_type' );
+        $this->seller_country       = $this->get_option( 'seller_country' );
+        $this->txn_type_escrow      = $this->get_option( 'txn_type_escrow' );
+        $this->seller_id            = $this->get_option( 'seller_id' );
+        $this->release_mechanism    = $this->get_option( 'release_mechanism' );
+        $this->fee_paid_by          = $this->get_option( 'fee_paid_by' );
+        $this->fee_percentage       = $this->get_option( 'fee_percentage' );
+        $this->enabled              = $this->get_option( 'enabled' );
+        $this->sandboxmode          = 'yes' === $this->get_option( 'sandboxmode' );
+        $this->live_api_key         = $this->sandboxmode ? $this->get_option( 'sandbox_api_key' ) : $this->get_option( 'live_api_key' );
+        $this->live_api_secret_key  = $this->sandboxmode ? $this->get_option( 'sandbox_api_secret_key' ) : $this->get_option( 'live_api_secret_key' );
 
         if($this->sandboxmode == 'yes'){
             $this->base_api_url = 'https://api-sandbox.tazapay.com';
@@ -116,35 +117,40 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             'live_api_secret_key' => array(
                 'title'       => __('Live API Secret Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
-                'description' => 'TazaPay Live API Secret Key'
-            ),
-            'seller_name' => array(
-                'title'       => __('Name', 'wc-tp-payment-gateway' ),
+                'description' => __('TazaPay Live API Secret Key', 'wc-tp-payment-gateway' )
+            ),            
+            'seller_id' => array(
+                'title'       => __('Seller ID', 'wc-tp-payment-gateway' ),
                 'type'        => 'text',
-                'description' => __('Seller\'s Name', 'wc-tp-payment-gateway' ),
-                'required'    => true,
+                'description' => __('Tazapay account UUID', 'wc-tp-payment-gateway' )
             ),
-            'seller_email' => array(
-                'title'       => __('Email', 'wc-tp-payment-gateway' ),
-                'type'        => 'text',
-                'description' => __('Seller\'s Email', 'wc-tp-payment-gateway' ),
-                'required'    => true,
-            ),
-            'seller_type' => array(
-                'title'       => __('Entity Type', 'wc-tp-payment-gateway' ),
-                'type'        => 'select',
-                'options'     => array(
-                    'Individual' => __('Individual', 'wc-tp-payment-gateway' ),
-                    'Business' => __('Business', 'wc-tp-payment-gateway' )
-                ),
-                'description'=> __('User\'s entity type', 'wc-tp-payment-gateway' )
-            ),
-            'seller_country' => array(
-                'title'       => __('Country', 'wc-tp-payment-gateway' ),
-                'type'        => 'select',
-                'options'     => $countries,
-                'description' => __('User\'s country', 'wc-tp-payment-gateway' )
-            ),
+            // 'seller_name' => array(
+            //     'title'       => __('Name', 'wc-tp-payment-gateway' ),
+            //     'type'        => 'text',
+            //     'description' => __('Seller\'s Name', 'wc-tp-payment-gateway' ),
+            //     'required'    => true,
+            // ),
+            // 'seller_email' => array(
+            //     'title'       => __('Email', 'wc-tp-payment-gateway' ),
+            //     'type'        => 'text',
+            //     'description' => __('Seller\'s Email', 'wc-tp-payment-gateway' ),
+            //     'required'    => true,
+            // ),
+            // 'seller_type' => array(
+            //     'title'       => __('Entity Type', 'wc-tp-payment-gateway' ),
+            //     'type'        => 'select',
+            //     'options'     => array(
+            //         'Individual' => __('Individual', 'wc-tp-payment-gateway' ),
+            //         'Business' => __('Business', 'wc-tp-payment-gateway' )
+            //     ),
+            //     'description'=> __('User\'s entity type', 'wc-tp-payment-gateway' )
+            // ),
+            // 'seller_country' => array(
+            //     'title'       => __('Country', 'wc-tp-payment-gateway' ),
+            //     'type'        => 'select',
+            //     'options'     => $countries,
+            //     'description' => __('User\'s country', 'wc-tp-payment-gateway' )
+            // ),
             'txn_type_escrow' => array(
                 'title'       => __('Transaction Type', 'wc-tp-payment-gateway' ),
                 'type'        => 'select',
@@ -533,8 +539,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         $response   = curl_exec($curl);
 
         $upload_dir = wp_upload_dir();
-
-        $filename = $upload_dir['basedir'].'/response.txt';
+        $filename = $upload_dir['basedir'].'/tazapay_payment_log.txt';
         $responsetxt = 'Oder Id:'.$order_id.'-'.$response."\n";
 
         if (file_exists($filename)) {
@@ -544,7 +549,6 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
         } else {
 
-            $log_file = "activity/".$user.".txt";
             $handle = fopen($filename, "w") or die("Unable to open file!");
             fwrite($handle, $responsetxt);
         }
@@ -587,7 +591,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             "contact_code"          => $phoneCode,
             "contact_number"        => $order->get_billing_phone(),
             "country"               => $order->get_billing_country(),
-            "ind_bus_type"          => $this->seller_type,
+            "ind_bus_type"          => "Individual",
             "partners_customer_id"  => "1232131"
         );
 
@@ -614,7 +618,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             update_user_meta( $userid, 'contact_code', $phoneCode );
             update_user_meta( $userid, 'contact_number', $order->get_billing_phone() );
             update_user_meta( $userid, 'billing_country', $order->get_billing_country() );
-            update_user_meta( $userid, 'ind_bus_type', $this->seller_type );                
+            update_user_meta( $userid, 'ind_bus_type', 'Individual' );                
             update_user_meta( $userid, 'created', current_time( 'mysql' ) );
             update_user_meta( $userid, "billing_first_name", $order->get_billing_first_name() );
             update_user_meta( $userid, "billing_last_name", $order->get_billing_last_name() );
@@ -623,7 +627,6 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         }
         else
         {
-
             $result   = $this->request_apicall( $api_url, $api_endpoint, $args, $order_id );
         }
 
@@ -658,7 +661,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 update_user_meta( $user_id, 'contact_code', $phoneCode );
                 update_user_meta( $user_id, 'contact_number', $order->get_billing_phone() );
                 update_user_meta( $user_id, 'billing_country', $order->get_billing_country() );
-                update_user_meta( $user_id, 'ind_bus_type', $this->seller_type );                
+                update_user_meta( $user_id, 'ind_bus_type', 'Individual' );                
                 update_user_meta( $user_id, 'created', current_time( 'mysql' ) );
                 update_user_meta( $user_id, "billing_first_name", $order->get_billing_first_name() );
                 update_user_meta( $user_id, "billing_last_name", $order->get_billing_last_name() );
@@ -698,12 +701,13 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                             "release_mechanism"     => $this->release_mechanism,
                             "initiated_by"          => $account_id,
                             "buyer_id"              => $account_id,
-                            "seller"                => array(
-                                                        "country"      => $this->seller_country,
-                                                        "email"        => $this->seller_email,
-                                                        "ind_bus_type" => $this->seller_type,
-                                                        "contact_name" => $this->seller_name
-                            ),
+                            "seller_id"             => $this->seller_id,
+                            // "seller"                => array(
+                            //                             "country"      => $this->seller_country,
+                            //                             "email"        => $this->seller_email,
+                            //                             "ind_bus_type" => $this->seller_type,
+                            //                             "contact_name" => $this->seller_name
+                            // ),
                             "txn_description"       => trim( $this->description ),
                             "invoice_currency"      => get_option('woocommerce_currency'),
                             "invoice_amount"        => (int) $order->get_total()
@@ -714,7 +718,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                         $escrow_api_endpoint = "/v1/escrow";
                         $api_url             = $this->base_api_url.'/v1/escrow';
 
-                        $result_escrow = $this->request_apicall( $api_url, $escrow_api_endpoint, $argsEscrow, $order_id);
+                        $result_escrow = $this->request_apicall( $api_url, $escrow_api_endpoint, $argsEscrow, $order_id );
 
                         $create_escrow_msg = "";
                         $create_escrow_msg = $result_escrow->message;
@@ -756,7 +760,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                         $payment_api_endpoint = "/v1/session/payment";
                         $api_url = $this->base_api_url.'/v1/session/payment';
 
-                        $result_payment = $this->request_apicall( $api_url, $payment_api_endpoint, $argsPayment, $order_id);
+                        $result_payment = $this->request_apicall( $api_url, $payment_api_endpoint, $argsPayment, $order_id );
 
                         $payment_msg = "";
                         $payment_msg = $result_payment->message;

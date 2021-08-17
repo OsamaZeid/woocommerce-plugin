@@ -43,8 +43,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
             'singular'  => 'tazapayuser',    //singular name of the listed records
             'plural'    => 'tazapayusers',   //plural name of the listed records
             'ajax'      => false             //does this table support ajax?
-        ) );
-        
+        ) );        
     }
 
 
@@ -178,7 +177,6 @@ class TazaPay_User_List_Table extends WP_List_Table {
         );
     }
 
-
     /** ************************************************************************
      * REQUIRED if displaying checkboxes or using bulk actions! The 'cb' column
      * is given special treatment when columns are processed. It ALWAYS needs to
@@ -195,7 +193,6 @@ class TazaPay_User_List_Table extends WP_List_Table {
             /*$2%s*/ $item['ID']                //The value of the checkbox should be the record's id
         );
     }
-
 
     /** ************************************************************************
      * REQUIRED! This method dictates the table's columns and titles. This should
@@ -216,21 +213,20 @@ class TazaPay_User_List_Table extends WP_List_Table {
             'title'             => __( 'ID', 'wc-tp-payment-gateway' ),
             //'id'                => __( 'ID', 'wc-tp-payment-gateway' ),
             'account_id'        => __( 'TazaPay Account UUID', 'wc-tp-payment-gateway' ),
-            'email'             => __( 'Email', 'wc-tp-payment-gateway' ),
             'user_type'         => __( 'User Type', 'wc-tp-payment-gateway' ),
+            'email'             => __( 'Email', 'wc-tp-payment-gateway' ),
+            'ind_bus_type'      => __( 'Entity Type', 'wc-tp-payment-gateway' ),
             'first_name'        => __( 'First Name', 'wc-tp-payment-gateway' ),
             'last_name'         => __( 'Last Name', 'wc-tp-payment-gateway' ),
-            'contact_code'      => __( 'Contact Code', 'wc-tp-payment-gateway' ),
-            'contact_number'    => __( 'Contact Number', 'wc-tp-payment-gateway' ),
-            'country_name'      => __( 'Country', 'wc-tp-payment-gateway' ),
-            'ind_bus_type'      => __( 'Entity Type', 'wc-tp-payment-gateway' ),
-            'created'           => __( 'Created', 'wc-tp-payment-gateway' ),
             'business_name'     => __( 'Bussiness Name', 'wc-tp-payment-gateway' ),
             'partners_customer' => __( 'Partners Customer ID', 'wc-tp-payment-gateway' ),
+            'contact_code'      => __( 'Contact Code', 'wc-tp-payment-gateway' ),
+            'contact_number'    => __( 'Contact Number', 'wc-tp-payment-gateway' ),
+            'country_name'      => __( 'Country', 'wc-tp-payment-gateway' ),            
+            'created'           => __( 'Created', 'wc-tp-payment-gateway' ),
         );
         return $columns;
     }
-
 
     /** ************************************************************************
      * Optional. If you want one or more columns to be sortable (ASC/DESC toggle), 
@@ -249,17 +245,10 @@ class TazaPay_User_List_Table extends WP_List_Table {
     function get_sortable_columns() {
         $sortable_columns = array(
              'title'         => array('title',false),
-            // 'first_name'    => array('first_name',false),
-            // 'last_name'     => array('last_name',false),
-            // 'contact_code'  => array('contact_code',false),
-            // 'country_name'  => array('country_name',false),
-            // 'created'       => array('created',false),
-            // 'ind_bus_type'  => array('ind_bus_type',false),
-            // 'business_name' => array('business_name',false),
+             'country_name'  => array('country_name',false)
         );
         return $sortable_columns;
     }
-
 
     /** ************************************************************************
      * Optional. If you need to include bulk actions in your list table, this is
@@ -282,7 +271,6 @@ class TazaPay_User_List_Table extends WP_List_Table {
     //     return $actions;
     // }
 
-
     /** ************************************************************************
      * Optional. You can handle your bulk actions anywhere or anyhow you prefer.
      * For this example package, we will handle it in the class to keep things
@@ -300,10 +288,8 @@ class TazaPay_User_List_Table extends WP_List_Table {
         if( 'delete'===$this->current_action() ) {
             $wpdb->delete($table, array('ID'=>$user_id));
             $_GET['msg']="delete";
-        }        
-        
+        }                
     }
-
 
     /** ************************************************************************
      * REQUIRED! This is where you prepare your data for display. This method will
@@ -328,8 +314,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
         /**
          * First, lets decide how many records per page to show
          */
-        $per_page = 10;
-        
+        $per_page = 10;        
         
         /**
          * REQUIRED. Now we need to define our column headers. This includes a complete
@@ -340,8 +325,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
          */
         $columns = $this->get_columns();
         $hidden = array();
-        $sortable = $this->get_sortable_columns();
-        
+        $sortable = $this->get_sortable_columns();        
         
         /**
          * REQUIRED. Finally, we build an array to be used by the class for column 
@@ -349,15 +333,13 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * 3 other arrays. One for all columns, one for hidden columns, and one
          * for sortable columns.
          */
-        $this->_column_headers = array($columns, $hidden, $sortable);
-        
+        $this->_column_headers = array($columns, $hidden, $sortable);        
         
         /**
          * Optional. You can handle your bulk actions however you see fit. In this
          * case, we'll handle them within our package just to keep things clean.
          */
-        $this->process_bulk_action();
-        
+        $this->process_bulk_action();        
         
         /**
          * Instead of querying a database, we're going to fetch the example data
@@ -385,13 +367,12 @@ class TazaPay_User_List_Table extends WP_List_Table {
             $result = strcmp($a[$orderby], $b[$orderby]); //Determine sort order
             return ($order==='asc') ? $result : -$result; //Send final sort direction to usort
         }
-        usort($data, 'usort_reorder');
+        usort($data, 'usort_reorder');        
         
-        
-        /***********************************************************************
-         * ---------------------------------------------------------------------
+        /*****************************------------------------------------------------------
          * vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-         * 
+         * ******************************************
+         * ---------------
          * In a real-world situation, this is where you would place your query.
          *
          * For information on making queries in WordPress, see this Codex entry:
@@ -400,8 +381,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          * ---------------------------------------------------------------------
          **********************************************************************/
-        
-                
+                        
         /**
          * REQUIRED for pagination. Let's figure out what page the user is currently 
          * looking at. We'll need this later, so you should always include it in 
@@ -415,24 +395,20 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * without filtering. We'll need this later, so you should always include it 
          * in your own package classes.
          */
-        $total_items = count($data);
-        
+        $total_items = count($data);        
         
         /**
          * The WP_List_Table class does not handle pagination for us, so we need
          * to ensure that the data is trimmed to only the current page. We can use
          * array_slice() to 
          */
-        $data = array_slice($data,(($current_page-1)*$per_page),$per_page);
-        
-        
+        $data = array_slice($data,(($current_page-1)*$per_page),$per_page);    
         
         /**
          * REQUIRED. Now we can add our *sorted* data to the items property, where 
          * it can be used by the rest of the class.
          */
-        $this->items = $data;
-        
+        $this->items = $data;        
         
         /**
          * REQUIRED. We also have to register our pagination options & calculations.
