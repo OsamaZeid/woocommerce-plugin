@@ -37,7 +37,13 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         $this->sandboxmode = 'yes' === $this->get_option( 'sandboxmode' );
         $this->live_api_key = $this->sandboxmode ? $this->get_option( 'sandbox_api_key' ) : $this->get_option( 'live_api_key' );
         $this->live_api_secret_key = $this->sandboxmode ? $this->get_option( 'sandbox_api_secret_key' ) : $this->get_option( 'live_api_secret_key' );
-    
+
+        if($this->sandboxmode == 'yes'){
+            $this->base_api_url = 'https://api-sandbox.tazapay.com';
+        }else{
+            $this->base_api_url = 'https://api.tazapay.com';
+        }
+        
         // This action hook saves the settings
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -60,7 +66,6 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         global $woocommerce;
         $countries_obj   = new WC_Countries();
         $countries       = $countries_obj->__get('countries');
-
 
         $text1 = __( 'Place the payment gateway in sandbox mode using sandbox API keys', 'wc-tp-payment-gateway' );
         $text2 = __( 'Request credentials', 'wc-tp-payment-gateway' );
@@ -431,7 +436,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             }
             echo wpautop( wp_kses_post( $this->description ) );
 
-            $payment_methods = TAZAPAY_PUBLIC_ASSETS_DIR . "images/payment_methods.svg";
+            $payment_methods = TAZAPAY_PUBLIC_ASSETS_DIR . "images/payment_methods.png";
             echo '<img src=' .$payment_methods. ' alt="tazapay" style="max-height: inherit;float: none;margin-left: auto; width: 100%;height: auto;margin-top: 20px;"/>';
         }
 
@@ -596,7 +601,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         $user_id      = username_exists( $user_name );
 
         $api_endpoint = "/v1/user";
-        $api_url      = 'https://api-sandbox.tazapay.com/v1/user';
+        $api_url      = $this->base_api_url.'/v1/user';
 
 
         if($register_user_email){
@@ -707,7 +712,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                         update_post_meta( $order_id, 'account_id', $account_id );                  
      
                         $escrow_api_endpoint = "/v1/escrow";
-                        $api_url             = 'https://api-sandbox.tazapay.com/v1/escrow';
+                        $api_url             = $this->base_api_url.'/v1/escrow';
 
                         $result_escrow = $this->request_apicall( $api_url, $escrow_api_endpoint, $argsEscrow, $order_id);
 
@@ -749,7 +754,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                         update_post_meta( $order_id, 'txn_no', $result_escrow->data->txn_no );
 
                         $payment_api_endpoint = "/v1/session/payment";
-                        $api_url = 'https://api-sandbox.tazapay.com/v1/session/payment';
+                        $api_url = $this->base_api_url.'/v1/session/payment';
 
                         $result_payment = $this->request_apicall( $api_url, $payment_api_endpoint, $argsPayment, $order_id);
 
@@ -932,7 +937,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
     $redirect_url = get_post_meta( $order->get_id(), 'redirect_url', true );
     $txn_no = get_post_meta( $order->get_id(), 'txn_no', true );
     
-        if(isset($account_id)){
+        if(isset($account_id) && !empty($account_id)){
         ?>
         <br class="clear" />
         <h3><?php echo __( 'TazaPay Information', 'wc-tp-payment-gateway' ); ?></h3>
@@ -940,7 +945,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         <div class="address">
             <p><strong><?php echo __( 'TazaPay Account UUID:', 'wc-tp-payment-gateway' ); ?></strong> <?php echo $account_id ?></p>
             <p><strong><?php echo __( 'Txn no:', 'wc-tp-payment-gateway' ); ?></strong> <?php echo $txn_no ?></p>
-            <p><strong><?php echo __( 'Redirect url:', 'wc-tp-payment-gateway' ); ?></strong> <?php echo $redirect_url ?></p>            
+            <!-- <p><strong><?php //echo __( 'Redirect url:', 'wc-tp-payment-gateway' ); ?></strong> <?php //echo $redirect_url ?></p> -->
         </div>
         <?php 
         }

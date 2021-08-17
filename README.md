@@ -25,4 +25,4 @@ Download package from https://github.com/tazapay/woocommerce-plugin.git
 
 ## License
 
-Copyright © 2021 Cardknox Development Inc. All rights reserved. See LICENSE for license details.
+Copyright © 2021 TazaPay Development Inc. All rights reserved. See LICENSE for license details.
