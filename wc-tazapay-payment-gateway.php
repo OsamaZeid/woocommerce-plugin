@@ -28,7 +28,7 @@ add_action( 'admin_enqueue_scripts', 'tazapay_enqueue_styles' );
 function tazapay_enqueue_styles()
 {
     wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-form.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');    
-    //wp_enqueue_script( 'tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
+    wp_enqueue_script( 'tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
     wp_enqueue_script( 'tazapay_public_js', TAZAPAY_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
 }
 

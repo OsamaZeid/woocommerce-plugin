@@ -17,13 +17,13 @@ if(isset($_POST['submit'])){
         $country                = !empty($_POST['country']) ? $_POST['country'] : '';
         $user_email             = !empty($_POST['email']) ? $_POST['email'] : '';
 
-        $countryName            = WC()->countries->countries[$country];
+        //$countryName            = WC()->countries->countries[$country];
         $phoneCode              = $apiRequestCall->getPhoneCode($country);
 
         if($business_name){
             $args = array(
                 "email"                 => $user_email,
-                "country"               => $countryName,
+                "country"               => $country,
                 "contact_code"          => $phoneCode,
                 "contact_number"        => $phone_number,            
                 "ind_bus_type"          => $indbustype,
@@ -37,7 +37,7 @@ if(isset($_POST['submit'])){
                 "last_name"             => $last_name,
                 "contact_code"          => $phoneCode,
                 "contact_number"        => $phone_number,
-                "country"               => $countryName,
+                "country"               => $country,
                 "ind_bus_type"          => $indbustype,
                 "partners_customer_id"  => $partners_customer_id
             );
@@ -46,7 +46,7 @@ if(isset($_POST['submit'])){
         $api_endpoint = "/v1/user";
         $api_url = 'https://api-sandbox.tazapay.com/v1/user';
 
-        $createUser = $apiRequestCall->request_apicall( $api_url, $api_endpoint, $args );
+        $createUser = $apiRequestCall->request_apicall( $api_url, $api_endpoint, $args, '' );
 
         if ( $createUser->status == 'success' ) {
 
@@ -69,8 +69,8 @@ if(isset($_POST['submit'])){
             update_user_meta( $user_id, 'billing_country', $country );
             update_user_meta( $user_id, 'ind_bus_type', $indbustype );
             update_user_meta( $user_id, 'partners_customer_id', $partners_customer_id );
-            update_user_meta( $user_id, 'created', current_time( 'mysql' ) );            
-            
+            update_user_meta( $user_id, 'created', current_time( 'mysql' ) );
+            update_user_meta( $user_id, 'user_type', 'seller' );
             ?>
             <div class="notice notice-success is-dismissible">
               <p><?php _e( $createUser->message, 'wc-tp-payment-gateway' ); ?></p>
@@ -98,14 +98,23 @@ if(isset($_POST['submit'])){
             <p><?php _e( $create_user_error_msg, 'wc-tp-payment-gateway' ); ?></p>
           </div>
           <?php
-
         }
 } 
+
+$account_id = get_user_meta( $user_id, 'account_id', true );
+
 echo '<h4>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h4><hr>';
 
 ?>
 <form method="post" name="accountform" action="#" class="tazapay_form">
-<div class="container">    
+<div class="container">
+    <?php if(!empty($account_id)){?>
+    <div class="seller-id">
+    <?php
+        echo sprintf(__("<span><strong>Seller Tazapay account UUID: </strong></span><span>%s</span>", 'wc-tp-payment-gateway'), $account_id);
+    ?>   
+    </div><br>
+    <?php } ?>
     <label for="firstname"><b><?php echo __('Ind Bus Type','wc-tp-payment-gateway'); ?></b></label>
     <select id="indbustype" name="indbustype">
         <option value=""><?php echo __('Select Type','wc-tp-payment-gateway'); ?></option>

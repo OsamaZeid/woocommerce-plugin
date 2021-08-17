@@ -3,7 +3,7 @@
   background-color: white;
 }
 .tazapay_form input[type=text], .tazapay_form select {
-  width: 70%;
+  width: 35%;
   padding: 10px;
   margin: 5px 0 5px 0;
   display: inline-block;

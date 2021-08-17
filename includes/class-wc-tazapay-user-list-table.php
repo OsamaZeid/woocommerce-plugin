@@ -87,9 +87,12 @@ class TazaPay_User_List_Table extends WP_List_Table {
 
         foreach($userArray as $userDetails){
 
+            $usertype           = get_user_meta( $userDetails->ID, 'user_type', true );
+            $usertype           = !empty($usertype) ? $usertype : 'buyer';
+
             $first_name         = get_user_meta( $userDetails->ID, 'first_name', true );
             $last_name          = get_user_meta( $userDetails->ID, 'last_name', true );
-            $buyer              = 'buyer';
+            $buyer              = $usertype;
             $account_id         = get_user_meta( $userDetails->ID, 'account_id', true );
             $contact_code       = get_user_meta( $userDetails->ID, 'contact_code', true );
             $contact_number     = get_user_meta( $userDetails->ID, 'contact_number', true );
@@ -166,7 +169,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
         //Build row actions
         $actions = array(
             'edit'      => sprintf('<a href="?page=%s&action=%s&user=%s">Edit</a>','tazapay-user-edit','edit',$item['id']),
-            'delete'    => sprintf('<a href="?page=%s&action=%s&user=%s">Delete</a>',$_REQUEST['page'],'delete',$item['id']),
+            //'delete'    => sprintf('<a href="?page=%s&action=%s&user=%s">Delete</a>',$_REQUEST['page'],'delete',$item['id']),
         );
         
         //Return the title contents
@@ -282,7 +285,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
         global $wpdb;
         $table = $wpdb->prefix.'users';
 
-        $user_id = $_GET['user'];
+        $user_id = isset($_GET['user']);
 
         //Detect when a bulk action is being triggered...
         if( 'delete'===$this->current_action() ) {
@@ -430,8 +433,15 @@ class TazaPay_User_List_Table extends WP_List_Table {
 function tt_add_menu_items(){
     add_submenu_page( 'woocommerce', __('TazaPay Users', 'wc-tp-payment-gateway' ), __('TazaPay Users', 'wc-tp-payment-gateway' ), 'manage_options', 'tazapay-user', 'tazapay_render_list_page' );
     add_submenu_page( '', '', '', 'manage_options', 'tazapay-user-edit', 'tazapay_render_edit_page' );
+    add_submenu_page( '', '', '', 'manage_options', 'tazapay-signup-form', 'tazapay_signup_form' );
 } 
 add_action('admin_menu', 'tt_add_menu_items');
+
+// Form shortcode
+function tazapay_signup_form($atts)
+{
+    require_once plugin_dir_path(__FILE__) . 'shortcodes/tazapay-accountform-shortcode.php';
+}
 
 /** *************************** RENDER TAZAPAY USER ********************************
  *******************************************************************************

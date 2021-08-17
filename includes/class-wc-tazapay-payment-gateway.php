@@ -122,7 +122,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             'seller_id' => array(
                 'title'       => __('Seller ID', 'wc-tp-payment-gateway' ),
                 'type'        => 'text',
-                'description' => __('Tazapay account UUID', 'wc-tp-payment-gateway' )
+                'description' => __('Tazapay account UUID <a href="?page=tazapay-signup-form" class="btn btn-link" target="_blank" title="Click Here">Click here</a><br><strong>Note:</strong> TazaPay API Key and TazaPay API Secret Key mandatory', 'wc-tp-payment-gateway' )
             ),
             // 'seller_name' => array(
             //     'title'       => __('Name', 'wc-tp-payment-gateway' ),
