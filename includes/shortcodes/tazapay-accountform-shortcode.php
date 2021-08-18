@@ -1,8 +1,17 @@
-<div class="tazapay-account-information">
+<div class="wrap tazapay-account-information">
 <?php
 global $woocommerce;
 $countries_obj          = new WC_Countries();
 $countries              = $countries_obj->__get('countries');
+
+$woocommerce_tz_tazapay_settings = get_option( 'woocommerce_tz_tazapay_settings' );
+
+$user_email         = $woocommerce_tz_tazapay_settings['seller_email'];
+$user               = get_user_by( 'email', $user_email );
+$user_id            = $user->ID;
+$account_id         = get_user_meta( $user_id, 'account_id', true );
+
+if( empty($account_id) ){    
 
 if(isset($_POST['submit'])){
 
@@ -15,9 +24,14 @@ if(isset($_POST['submit'])){
         $phone_number           = !empty($_POST['phone_number']) ? $_POST['phone_number'] : '';
         $partners_customer_id   = !empty($_POST['partners_customer_id']) ? $_POST['partners_customer_id'] : '';
         $country                = !empty($_POST['country']) ? $_POST['country'] : '';
-        $user_email             = !empty($_POST['email']) ? $_POST['email'] : '';
 
-        //$countryName            = WC()->countries->countries[$country];
+        if(empty($user_email)){
+          $user_email           = !empty($_POST['email']) ? $_POST['email'] : '';
+        }else{
+          $user_email           = $woocommerce_tz_tazapay_settings['seller_email'];
+        }
+
+        //$countryName          = WC()->countries->countries[$country];
         $phoneCode              = $apiRequestCall->getPhoneCode($country);
 
         if($business_name){
@@ -76,6 +90,9 @@ if(isset($_POST['submit'])){
               <p><?php _e( $createUser->message, 'wc-tp-payment-gateway' ); ?></p>
             </div>
             <?php
+            wp_redirect( admin_url('?page=tazapay-signup-form'), 301 );
+            exit();
+
         }else{
 
           $create_user_error_msg = "";
@@ -97,13 +114,14 @@ if(isset($_POST['submit'])){
           <div class="notice notice-error is-dismissible">
             <p><?php _e( $create_user_error_msg, 'wc-tp-payment-gateway' ); ?></p>
           </div>
-          <?php
+          <?php          
         }
 } 
 
-$account_id = get_user_meta( $user_id, 'account_id', true );
 
-echo '<h4>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h4><hr>';
+echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2><hr>';
+
+$account_id = get_user_meta( $user_id, 'account_id', true );
 
 ?>
 <form method="post" name="accountform" action="#" class="tazapay_form">
@@ -132,7 +150,15 @@ echo '<h4>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h4><hr>';
         <input type="text" placeholder="Business Name" name="business_name" id="business_name">
     </div>
     <label for="email"><b><?php echo __('E-Mail','wc-tp-payment-gateway'); ?></b></label>
+    <?php 
+    if($user_email){
+    ?>
+    <input type="text" placeholder="Enter Email" name="email" id="email" value="<?php echo $user_email; ?>" readonly disabled>
+    <?php } else { ?>
     <input type="text" placeholder="Enter Email" name="email" id="email">
+    <?php 
+    } 
+    ?>
     <label for="phonenumber"><b><?php echo __('Phone Number','wc-tp-payment-gateway'); ?></b></label>
     <input type="text" placeholder="Phone Number" name="phone_number" id="phone_number">
     <label for="partnerscustomerid"><b><?php echo __('Partners Customer ID','wc-tp-payment-gateway'); ?></b></label>
@@ -151,4 +177,78 @@ echo '<h4>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h4><hr>';
     <input type="submit" class="registerbtn" name="submit" value="<?php echo __('Submit','wc-tp-payment-gateway'); ?>">
   </div>  
 </form>
+<?php
+}else{
+
+$first_name         = get_user_meta( $user_id, 'first_name', true );
+$last_name          = get_user_meta( $user_id, 'last_name', true );
+$buyer              = get_user_meta( $user_id, 'user_type', true );
+$contact_code       = get_user_meta( $user_id, 'contact_code', true );
+$contact_number     = get_user_meta( $user_id, 'contact_number', true );
+$country_name       = get_user_meta( $user_id, 'billing_country', true );
+$ind_bus_type       = get_user_meta( $user_id, 'ind_bus_type', true );
+$business_name      = get_user_meta( $user_id, 'business_name', true );
+$partners_customer  = get_user_meta( $user_id, 'partners_customer_id', true );
+$created            = get_user_meta( $user_id, 'created', true );
+
+$countryName    = WC()->countries->countries[$country_name];
+
+echo '<h2>'.__('TazaPay Account Information','wc-tp-payment-gateway'). '</h2><hr>';
+?>
+<table class="wp-list-table widefat fixed striped table-view-list">
+  <tr>
+    <th><?php echo __('TazaPay Account UUID:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $account_id; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('User Type:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $buyer; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('Entity Type:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $ind_bus_type; ?></td>
+  </tr>
+  <?php if($business_name) { ?>
+  <tr>
+    <th><?php echo __('Bussiness Name:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $business_name; ?></td>
+  </tr>
+  <?php }else{ ?>  
+  <tr>
+    <th><?php echo __('First Name:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $first_name; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('Last Name:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $last_name; ?></td>
+  </tr>
+  <?php } ?>
+  <tr>
+    <th><?php echo __('E-mail:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $user_email; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('Contact Code:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $contact_code; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('Contact Number:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $contact_number; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('Country:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $countryName; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('Partners Customer ID:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $partners_customer; ?></td>
+  </tr>
+  <tr>
+    <th><?php echo __('Created At:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $created; ?></td>
+  </tr>
+</table>
+<?php    
+}
+?>
 </div>

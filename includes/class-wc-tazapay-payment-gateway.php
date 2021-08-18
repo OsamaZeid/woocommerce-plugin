@@ -72,6 +72,9 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         $text2 = __( 'Request credentials', 'wc-tp-payment-gateway' );
         $text3 = __( 'Request credentials for accepting payments via TazaPay', 'wc-tp-payment-gateway' );
 
+        $text4 = __( 'Get Seller ID', 'wc-tp-payment-gateway' );
+        $text5 = __( 'Before you redirect to sign up form you should save configuration.', 'wc-tp-payment-gateway' );
+
         $this->form_fields = array(
             'enabled' => array(
                 'title'       => __('Enable/Disable', 'wc-tp-payment-gateway' ),
@@ -118,11 +121,16 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 'title'       => __('Live API Secret Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
                 'description' => __('TazaPay Live API Secret Key', 'wc-tp-payment-gateway' )
+            ),
+            'seller_email' => array(
+                'title'       => __('Email', 'wc-tp-payment-gateway' ),
+                'type'        => 'text',
+                'description' => __('Seller\'s Email', 'wc-tp-payment-gateway' )
             ),            
             'seller_id' => array(
                 'title'       => __('Seller ID', 'wc-tp-payment-gateway' ),
                 'type'        => 'text',
-                'description' => __('Tazapay account UUID <a href="?page=tazapay-signup-form" class="btn btn-link" target="_blank" title="Click Here">Click here</a><br><strong>Note:</strong> TazaPay API Key and TazaPay API Secret Key mandatory', 'wc-tp-payment-gateway' )
+                'description' => __('Tazapay account UUID <br><br><a href="?page=tazapay-signup-form" class="button-primary" target="_blank" title="Click Here">'.$text4.'</a><br>'.$text5, 'wc-tp-payment-gateway' )
             ),
             // 'seller_name' => array(
             //     'title'       => __('Name', 'wc-tp-payment-gateway' ),

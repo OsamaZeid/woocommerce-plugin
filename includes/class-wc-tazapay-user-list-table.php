@@ -76,7 +76,8 @@ class TazaPay_User_List_Table extends WP_List_Table {
 
         $args = array(
             'role'    => 'Customer',
-            'order'   => 'ASC'
+            'orderby' => 'ID',
+            'order'   => 'DESC'
         );
         $users = get_users( $args );
         if($users){
@@ -146,7 +147,6 @@ class TazaPay_User_List_Table extends WP_List_Table {
                 return print_r( $item, true ) ;
         }        
     }
-
 
     /** ************************************************************************
      * Recommended. This is a custom column method and is responsible for what
@@ -247,7 +247,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
      **************************************************************************/
     function get_sortable_columns() {
         $sortable_columns = array(
-             'title'         => array('title',false),
+             'title'         => array('id',false),
              'country_name'  => array('country_name',false)
         );
         return $sortable_columns;
@@ -354,7 +354,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * be able to use your precisely-queried data immediately.
          */
 
-        $data = $this->table_data();        
+        $data = $this->table_data();           
 
         /**
          * This checks for sorting input and sorts the data in our array accordingly.
@@ -365,10 +365,10 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * sorting technique would be unnecessary.
          */
         function usort_reorder($a,$b){
-            $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'id'; //If no sort, default to title
-            $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default to asc
-            $result = strcmp($a[$orderby], $b[$orderby]); //Determine sort order
-            return ($order==='asc') ? $result : -$result; //Send final sort direction to usort
+          $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'id'; //If no sort, default to title
+          $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default to asc
+          $result = strnatcmp($a[$orderby], $b[$orderby]); //Determine sort order
+          return ($order==='asc') ? $result : -$result; //Send final sort direction to usort
         }
         usort($data, 'usort_reorder');        
         
