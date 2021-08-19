@@ -589,235 +589,242 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
         // we need it to get any order detailes
         $order          = wc_get_order( $order_id );
+
+        $account_id = "";
+
+        $user_email = $order->get_billing_email();
+
+        $user   = get_user_by( 'email', $user_email );
+
+        // $userid              = get_current_user_id();
+        // $user_info           = get_userdata( $userid );
+        // $register_user_email = $user_info->user_email;
+
+
+        $userId = $user->ID;
+
+        // Create wordpress user if not exist
+        if (empty($userId)) {
+
+            $random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );            
+            $user_id         = wc_create_new_customer( $user_email, $user_name, $random_password ); 
+
+            update_user_meta( $user_id, 'account_id', $result->data->account_id );
+            update_user_meta( $user_id, 'first_name', $order->get_billing_first_name() );
+            update_user_meta( $user_id, 'last_name', $order->get_billing_last_name() );
+            update_user_meta( $user_id, 'contact_code', $phoneCode );
+            update_user_meta( $user_id, 'contact_number', $order->get_billing_phone() );
+            update_user_meta( $user_id, 'billing_country', $order->get_billing_country() );
+            update_user_meta( $user_id, 'ind_bus_type', 'Individual' );                
+            update_user_meta( $user_id, 'created', current_time( 'mysql' ) );
+            update_user_meta( $user_id, "billing_first_name", $order->get_billing_first_name() );
+            update_user_meta( $user_id, "billing_last_name", $order->get_billing_last_name() );
+            update_user_meta( $user_id, "billing_email", $order->get_billing_email() );
+
+            update_post_meta( $order_id, '_customer_user', $user_id ); 
+
+            $userId = $user_id;
+        }
+
         //$countryName    = WC()->countries->countries[$order->get_billing_country()];
         $phoneCode      = $this->getPhoneCode($order->get_billing_country());
 
-        $args = array(
-            "email"                 => $order->get_billing_email(),
-            "first_name"            => $order->get_billing_first_name(),
-            "last_name"             => $order->get_billing_last_name(),
-            "contact_code"          => $phoneCode,
-            "contact_number"        => $order->get_billing_phone(),
-            "country"               => $order->get_billing_country(),
-            "ind_bus_type"          => "Individual",
-            "partners_customer_id"  => "1232131"
-        );
+        $account_id = get_user_meta( $userId, 'account_id', true );
 
-        $userid              = get_current_user_id();
-        $user_info           = get_userdata( $userid );
-        $register_user_email = $user_info->user_email;
+        if(!empty($account_id)){
+           
+            $account_id = get_user_meta( $userId, 'account_id', true );
 
-        $user_name    = $order->get_billing_first_name().' '.$order->get_billing_last_name();
-        $user_name    = $this->random_username($user_name);
-        $user_email   = $order->get_billing_email();
-        $user_id      = username_exists( $user_name );
+            update_user_meta( $userId, 'account_id', $account_id);
+            update_user_meta( $userId, 'first_name', $order->get_billing_first_name() );
+            update_user_meta( $userId, 'last_name', $order->get_billing_last_name() );
+            update_user_meta( $userId, 'contact_code', $phoneCode );
+            update_user_meta( $userId, 'contact_number', $order->get_billing_phone() );
+            update_user_meta( $userId, 'billing_country', $order->get_billing_country() );
+            update_user_meta( $userId, 'ind_bus_type', 'Individual' );                
+            update_user_meta( $userId, 'created', current_time( 'mysql' ) );
+            update_user_meta( $userId, "billing_first_name", $order->get_billing_first_name() );
+            update_user_meta( $userId, "billing_last_name", $order->get_billing_last_name() );
+            update_user_meta( $userId, "billing_email", $order->get_billing_email() );
+            update_post_meta( $order_id, '_customer_user', $userId );
 
-        $api_endpoint = "/v1/user";
-        $api_url      = $this->base_api_url.'/v1/user';
+        }else{
 
+            // Create tazapay user 
 
-        if($register_user_email){
+            $args = array(
+                "email"                 => $order->get_billing_email(),
+                "first_name"            => $order->get_billing_first_name(),
+                "last_name"             => $order->get_billing_last_name(),
+                "contact_code"          => $phoneCode,
+                "contact_number"        => $order->get_billing_phone(),
+                "country"               => $order->get_billing_country(),
+                "ind_bus_type"          => "Individual"
+                //"partners_customer_id"  => "1232131"
+            );
+
+            $api_endpoint = "/v1/user";
+            $api_url      = $this->base_api_url.'/v1/user';
 
             $result   = $this->request_apicall( $api_url, $api_endpoint, $args, $order_id );
 
-            update_user_meta( $userid, 'account_id', $result->data->account_id );
-            update_user_meta( $userid, 'first_name', $order->get_billing_first_name() );
-            update_user_meta( $userid, 'last_name', $order->get_billing_last_name() );
-            update_user_meta( $userid, 'contact_code', $phoneCode );
-            update_user_meta( $userid, 'contact_number', $order->get_billing_phone() );
-            update_user_meta( $userid, 'billing_country', $order->get_billing_country() );
-            update_user_meta( $userid, 'ind_bus_type', 'Individual' );                
-            update_user_meta( $userid, 'created', current_time( 'mysql' ) );
-            update_user_meta( $userid, "billing_first_name", $order->get_billing_first_name() );
-            update_user_meta( $userid, "billing_last_name", $order->get_billing_last_name() );
-            update_user_meta( $userid, "billing_email", $order->get_billing_email() );
-            update_post_meta( $order_id, '_customer_user', $userid );
-        }
-        else
-        {
-            $result   = $this->request_apicall( $api_url, $api_endpoint, $args, $order_id );
-        }
 
-        $create_user_error_msg  = "";
-        $create_user_error_msg  = $result->message;
-        $create_user_error_msg .= ", TazaPay Email : ".$order->get_billing_email();
-        $create_user_error_msg .= ", TazaPay Account UUID : ". $result->data->account_id;
+            if ( $result->status == 'error' ) {
 
-        foreach ($result->errors as $key => $error) {
-            if (isset($error->code)) {
-                $create_user_error_msg .= ", code: ".$error->code;
+                $create_user_error_msg  = "";
+                $create_user_error_msg  = $result->message;
+                $create_user_error_msg .= ", TazaPay Email : ".$order->get_billing_email();
+
+                foreach ($result->errors as $key => $error) {
+                    if (isset($error->code)) {
+                        $create_user_error_msg .= ", code: ".$error->code;
+                    }
+                    if (isset($error->message)) {
+                        $create_user_error_msg .= ", Message: ".$error->message;
+                    }
+                    if (isset($error->remarks)) {
+                        $create_user_error_msg .= ", Remarks: ".$error->remarks;
+                    }
+                }
+                $order->add_order_note( $create_user_error_msg, true );
+
+
+                return array(
+                    'result' => 'success',
+                    'redirect' => $this->get_return_url( $order )
+                ); 
             }
-            if (isset($error->message)) {
-                $create_user_error_msg .= ", Message: ".$error->message;
-            }
-            if (isset($error->remarks)) {
-                $create_user_error_msg .= ", Remarks: ".$error->remarks;
-            }
-        }
-        $order->add_order_note( $create_user_error_msg, true );
-
-        if ( $result->status == 'success' ) {
-
-            if ( !$user_id and email_exists($user_email) == false ) {
-            
-                $random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );            
-                $user_id         = wc_create_new_customer( $user_email, $user_name, $random_password ); 
-
-                update_user_meta( $user_id, 'account_id', $result->data->account_id );
-                update_user_meta( $user_id, 'first_name', $order->get_billing_first_name() );
-                update_user_meta( $user_id, 'last_name', $order->get_billing_last_name() );
-                update_user_meta( $user_id, 'contact_code', $phoneCode );
-                update_user_meta( $user_id, 'contact_number', $order->get_billing_phone() );
-                update_user_meta( $user_id, 'billing_country', $order->get_billing_country() );
-                update_user_meta( $user_id, 'ind_bus_type', 'Individual' );                
-                update_user_meta( $user_id, 'created', current_time( 'mysql' ) );
-                update_user_meta( $user_id, "billing_first_name", $order->get_billing_first_name() );
-                update_user_meta( $user_id, "billing_last_name", $order->get_billing_last_name() );
-                update_user_meta( $user_id, "billing_email", $order->get_billing_email() );
-
-                update_post_meta( $order_id, '_customer_user', $user_id );
-
-            } else {
-                $random_password = __('User already exists.  Password inherited.');
-            }
+            if ( $result->status == 'success' ) {
+                $account_id = $result->data->account_id;
+            } 
         }
 
-        if( $result->status == 'error' ){
+        if (!empty($account_id )) {
+            $order->add_order_note( "Tazapay Acccount UUID: ".$account_id."", true );
 
+            $argsEscrow = array(
+                "txn_type"              => $this->txn_type_escrow,
+                "release_mechanism"     => $this->release_mechanism,
+                "initiated_by"          => $account_id,
+                "buyer_id"              => $account_id,
+                "seller_id"             => $this->seller_id,
+                "txn_description"       => trim( $this->description ),
+                "invoice_currency"      => get_option('woocommerce_currency'),
+                "invoice_amount"        => (int) $order->get_total()
+            );
+
+            update_post_meta( $order_id, 'account_id', $account_id );
+
+            update_user_meta( $userId, 'account_id', $account_id );
+            update_user_meta( $userId, 'first_name', $order->get_billing_first_name() );
+            update_user_meta( $userId, 'last_name', $order->get_billing_last_name() );
+            update_user_meta( $userId, 'contact_code', $phoneCode );
+            update_user_meta( $userId, 'contact_number', $order->get_billing_phone() );
+            update_user_meta( $userId, 'ind_bus_type', 'Individual' );                
+            update_user_meta( $userId, 'created', current_time( 'mysql' ) );
+
+            $escrow_api_endpoint = "/v1/escrow";
+            $api_url             = $this->base_api_url.'/v1/escrow';
+
+            $result_escrow = $this->request_apicall( $api_url, $escrow_api_endpoint, $argsEscrow, $order_id );
+
+            if( $result_escrow->status == 'error' ){
+
+                $create_escrow_msg = "";
+                $create_escrow_msg = $result_escrow->message;
+                foreach ($result_escrow->errors as $key => $error) {
+
+                    if (isset($error->code)) {
+                        $create_escrow_msg .= ", code: ".$error->code;
+                    }
+                    if (isset($error->message)) {
+                        $create_escrow_msg .= ", Message: ".$error->message;
+                    }
+                    if (isset($error->remarks)) {
+                        $create_escrow_msg .= ", Remarks: ".$error->remarks;
+                    }
+                }
+
+                $order->add_order_note( $create_escrow_msg, true );
+
+                return array(
+                    'result' => 'success',
+                    'redirect' => $this->get_return_url( $order )
+                ); 
+            }
+
+            if ( $result_escrow->status == 'success' ) {
+
+                update_post_meta( $order_id, 'txn_no', $result_escrow->data->txn_no );
+
+                $order->add_order_note( $result_escrow->message, true );
+
+                $argsPayment = array(
+                    "txn_no"         => $result_escrow->data->txn_no,
+                    "percentage"     => 0,
+                    "complete_url"   => $this->get_return_url( $order ),
+                    "error_url"      => $this->get_return_url( $order ),
+                    "callback_url"   => ""
+                );
+                
+
+                $payment_api_endpoint = "/v1/session/payment";
+                $api_url = $this->base_api_url.'/v1/session/payment';
+
+                $result_payment = $this->request_apicall( $api_url, $payment_api_endpoint, $argsPayment, $order_id );
+
+                if( $result_payment->status == 'error' ){
+                    $payment_msg = "";
+                    $payment_msg = $result_payment->message;
+                    foreach ($result_payment->errors as $key => $error) {
+
+                        if (isset($error->code)) {
+                            $payment_msg .= ", code: ".$error->code;
+                        }
+                        if (isset($error->message)) {
+                            $payment_msg .= ", Message: ".$error->message;
+                        }
+                        if (isset($error->remarks)) {
+                            $payment_msg .= ", Remarks: ".$error->remarks;
+                        }
+                    }
+                    $order->add_order_note( $payment_msg, true );
+
+                    return array(
+                        'result' => 'success',
+                        'redirect' => $this->get_return_url( $order )
+                    ); 
+                }
+
+                if ( $result_payment->status == 'success' ) {
+
+                    $redirect_url = $result_payment->data->redirect_url;                            
+
+                    // Mark as on-hold (we're awaiting the payment)
+                    $order->update_status( 'on-hold', __( 'Awaiting offline payment', 'wc-tp-payment-gateway' ) );
+                    
+                    $order->reduce_order_stock();
+                    
+                    $order->add_order_note( $result_payment->message, true );
+
+                    // Empty cart
+                    $woocommerce->cart->empty_cart();
+                    
+                    update_post_meta( $order_id, 'redirect_url', $redirect_url );
+                    
+                    // Redirect to the thank you page
+                    return array(
+                        'result' => 'success',
+                        'redirect' => $redirect_url
+                    );                            
+                }   
+            }
+
+        } else {
             return array(
                 'result' => 'success',
                 'redirect' => $this->get_return_url( $order )
             ); 
-        }
-
-        $user   = get_user_by( 'email', $user_email );
-        $userId = $user->ID;
-
-        if(!empty($userId)){
-            $result->status = 'success';
-            $account_id = get_user_meta( $userId, 'account_id', true );
-        }else{
-            $account_id = $result->data->account_id;
-        }
-
-        if( !is_wp_error( $result ) ) {
-
-            if ( $result->status == 'success' ) {
-                    
-                        $argsEscrow = array(
-                            "txn_type"              => $this->txn_type_escrow,
-                            "release_mechanism"     => $this->release_mechanism,
-                            "initiated_by"          => $account_id,
-                            "buyer_id"              => $account_id,
-                            "seller_id"             => $this->seller_id,
-                            // "seller"                => array(
-                            //                             "country"      => $this->seller_country,
-                            //                             "email"        => $this->seller_email,
-                            //                             "ind_bus_type" => $this->seller_type,
-                            //                             "contact_name" => $this->seller_name
-                            // ),
-                            "txn_description"       => trim( $this->description ),
-                            "invoice_currency"      => get_option('woocommerce_currency'),
-                            "invoice_amount"        => (int) $order->get_total()
-                        );
-
-                        update_post_meta( $order_id, 'account_id', $account_id );                  
-     
-                        $escrow_api_endpoint = "/v1/escrow";
-                        $api_url             = $this->base_api_url.'/v1/escrow';
-
-                        $result_escrow = $this->request_apicall( $api_url, $escrow_api_endpoint, $argsEscrow, $order_id );
-
-                        $create_escrow_msg = "";
-                        $create_escrow_msg = $result_escrow->message;
-                        foreach ($result_escrow->errors as $key => $error) {
-
-                            if (isset($error->code)) {
-                                $create_escrow_msg .= ", code: ".$error->code;
-                            }
-                            if (isset($error->message)) {
-                                $create_escrow_msg .= ", Message: ".$error->message;
-                            }
-                            if (isset($error->remarks)) {
-                                $create_escrow_msg .= ", Remarks: ".$error->remarks;
-                            }
-                        }
-
-                        $order->add_order_note( $create_escrow_msg, true );
-
-                        if( $result_escrow->status == 'error' ){
-
-                            return array(
-                                'result' => 'success',
-                                'redirect' => $this->get_return_url( $order )
-                            ); 
-                        }
-                    
-                    if ( $result_escrow->status == 'success' ) {
-
-                        $argsPayment = array(
-                            "txn_no"         => $result_escrow->data->txn_no,
-                            "percentage"     => 0,
-                            "complete_url"   => $this->get_return_url( $order ),
-                            "error_url"      => $this->get_return_url( $order ),
-                            "callback_url"   => ""
-                        );
-                        
-                        update_post_meta( $order_id, 'txn_no', $result_escrow->data->txn_no );
-
-                        $payment_api_endpoint = "/v1/session/payment";
-                        $api_url = $this->base_api_url.'/v1/session/payment';
-
-                        $result_payment = $this->request_apicall( $api_url, $payment_api_endpoint, $argsPayment, $order_id );
-
-                        $payment_msg = "";
-                        $payment_msg = $result_payment->message;
-                        foreach ($result_payment->errors as $key => $error) {
-
-                            if (isset($error->code)) {
-                                $payment_msg .= ", code: ".$error->code;
-                            }
-                            if (isset($error->message)) {
-                                $payment_msg .= ", Message: ".$error->message;
-                            }
-                            if (isset($error->remarks)) {
-                                $payment_msg .= ", Remarks: ".$error->remarks;
-                            }
-                        }
-                        $order->add_order_note( $payment_msg, true );
-
-                        if ( $result_payment->status == 'success' ) {
-
-                            $redirect_url = $result_payment->data->redirect_url;                            
-
-                            // Mark as on-hold (we're awaiting the payment)
-                            $order->update_status( 'on-hold', __( 'Awaiting offline payment', 'wc-tp-payment-gateway' ) );
-                          
-                            $order->reduce_order_stock();
-                            
-                            //$order->add_order_note( $result_payment->message, true );
-
-                            // Empty cart
-                            $woocommerce->cart->empty_cart();
-                            
-                            update_post_meta( $order_id, 'redirect_url', $redirect_url );
-                            
-                            // Redirect to the thank you page
-                            return array(
-                                'result' => 'success',
-                                'redirect' => $redirect_url
-                                //'redirect' => $this->get_return_url( $order )
-                            );                            
-                        }   
-                    } 
-
-            } else {
-                wc_add_notice(  'Please try again.', 'error' );
-                return;
-            }
-        } else {
-            wc_add_notice(  'Connection error.', 'error' );
-            return;
         }
     }
 
@@ -871,7 +878,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             $user_email     = $order->get_billing_email();
             $txn_no         = get_post_meta( $order_id, 'txn_no', true );
 
-            $user = get_user_by( 'email', $user_email );
+            $user   = get_user_by( 'email', $user_email );
             $userId = $user->ID;
 
             if(!empty($userId)){
