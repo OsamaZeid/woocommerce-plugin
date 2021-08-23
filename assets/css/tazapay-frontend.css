@@ -1,0 +1,24 @@
+.power-method-logos{
+	display: inline-flex;
+}
+.payment_box.payment_method_tz_tazapay{
+	text-align: center;
+}
+.payment_method_tz_tazapay .tazapay-payment-method{
+	max-height: inherit !important;
+	float: none !important;
+	margin-left: auto; 
+	width: 100%;
+	height: auto;
+}
+.payment-method-logos p {
+    text-align: left;
+    margin-top: 15px !important;
+    color: #26536B;
+    font-size: 17px;
+}
+.power-method-logos .left-text p {
+    padding-right: 8px;
+    color: #26536B;
+    font-size: 17px;
+}

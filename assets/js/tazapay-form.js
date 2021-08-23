@@ -61,7 +61,7 @@ jQuery(function() {
 });
 
 
-jQuery(document).ready(function($) {
-    $('#woocommerce_tz_tazapay_seller_name').attr('required', true);
-    $('#woocommerce_tz_tazapay_seller_email').attr('required', true);
-});
+// jQuery(document).ready(function($) {
+//   $('#woocommerce_tz_tazapay_seller_name').attr('required', true);
+//   $('#woocommerce_tz_tazapay_seller_email').attr('required', true);
+// });

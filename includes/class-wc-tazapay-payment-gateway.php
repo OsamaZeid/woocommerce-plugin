@@ -53,9 +53,8 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
         //add_action( 'woocommerce_view_order', array( $this, 'tazapay_view_order_and_thankyou_page' ), 20 );
         add_action( 'woocommerce_thankyou', array( $this, 'tazapay_view_order_and_thankyou_page' ), 20 );
-        add_filter( 'woocommerce_gateway_icon', array( $this, 'tazapay_woocommerce_icons'), 10, 2 );
+        //add_filter( 'woocommerce_gateway_icon', array( $this, 'tazapay_woocommerce_icons'), 10, 2 );
         add_filter( 'woocommerce_available_payment_gateways', array( $this, 'tazapay_woocommerce_available_payment_gateways' ) );
-
         add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'tazapay_order_meta_general' ) );
     }
 
@@ -448,10 +447,21 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 //$this->description = 'Don\'t have TazaPay account yet ? <a href="javascript:void(0);" onclick="tazapaySignupnow()" class="tazapay-signupnow">Sign up now</a>';
                 $this->description  = trim( $this->description );
             }
-            echo wpautop( wp_kses_post( $this->description ) );
-
+            
+            $tazapay_logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
             $payment_methods = TAZAPAY_PUBLIC_ASSETS_DIR . "images/payment_methods.png";
-            echo '<img src=' .$payment_methods. ' alt="tazapay" style="max-height: inherit;float: none;margin-left: auto; width: 100%;height: auto;margin-top: 20px;"/>';
+            ?>
+            <div class="power-method-logos">
+                <div class="left-text"><p><?php echo __('Powered by', 'wc-tp-payment-gateway'); ?></p></div>         
+                <div class="right-logo"><img src="<?php echo $tazapay_logo_url; ?>" alt="tazapay" /></div>
+            </div>
+            <div class="payment-method-logos">
+            <?php
+            echo wpautop( wp_kses_post( $this->description ) );
+            echo '<img src=' .$payment_methods. ' alt="tazapay" class="tazapay-payment-method"/>';
+            ?>
+            </div>
+            <?php
         }
 
         /*echo '<fieldset id="wc-' . esc_attr( $this->id ) . '-email-form" class="wc-email-form wc-payment-form" style="background:transparent;">';    
@@ -952,9 +962,9 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
     public function tazapay_order_meta_general( $order ){
 
-    $account_id = get_post_meta( $order->get_id(), 'account_id', true );
-    $redirect_url = get_post_meta( $order->get_id(), 'redirect_url', true );
-    $txn_no = get_post_meta( $order->get_id(), 'txn_no', true );
+        $account_id = get_post_meta( $order->get_id(), 'account_id', true );
+        $redirect_url = get_post_meta( $order->get_id(), 'redirect_url', true );
+        $txn_no = get_post_meta( $order->get_id(), 'txn_no', true );
     
         if(isset($account_id) && !empty($account_id)){
         ?>

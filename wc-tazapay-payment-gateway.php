@@ -24,6 +24,12 @@ function tazapay_add_gateway_class( $gateways ) {
     return $gateways;
 }
 
+add_action( 'wp_enqueue_scripts', 'tazapay_frontend_enqueue_styles' );
+function tazapay_frontend_enqueue_styles()
+{
+    wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-frontend.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');    
+}
+
 add_action( 'admin_enqueue_scripts', 'tazapay_enqueue_styles' );
 function tazapay_enqueue_styles()
 {
@@ -31,6 +37,8 @@ function tazapay_enqueue_styles()
     wp_enqueue_script( 'tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
     wp_enqueue_script( 'tazapay_public_js', TAZAPAY_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
 }
+
+
 
 
 // register_activation_hook(__FILE__, 'add_tazapay_signup_page');
@@ -55,6 +63,7 @@ function tazapay_init_gateway_class() {
     require 'includes/class-wc-tazapay-payment-gateway.php';
     require 'includes/class-wc-tazapay-user-list-table.php';
     require 'includes/class-wc-tazapay-account-form.php';
+    require 'includes/wc-order-status-change.php';
 
     load_plugin_textdomain( 'wc-tp-payment-gateway', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 }
