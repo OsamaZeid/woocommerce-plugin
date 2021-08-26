@@ -57,8 +57,17 @@ if(isset($_POST['submit'])){
             );
         }        
 
+        $sandboxmode = $woocommerce_tz_tazapay_settings['sandboxmode'];
+
+        if($sandboxmode == 'yes'){
+            $api_url = 'https://api-sandbox.tazapay.com';
+        }else{
+            $api_url = 'https://api.tazapay.com';
+        }
+
+        //$api_url  = 'https://api-sandbox.tazapay.com/v1/user';
         $api_endpoint = "/v1/user";
-        $api_url = 'https://api-sandbox.tazapay.com/v1/user';
+        $api_url  = $api_url.'/v1/user';
 
         $createUser = $apiRequestCall->request_apicall( $api_url, $api_endpoint, $args, '' );
 

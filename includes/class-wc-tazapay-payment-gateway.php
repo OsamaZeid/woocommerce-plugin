@@ -48,10 +48,10 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         // This action hook saves the settings
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
-        // add_filter( 'woocommerce_my_account_my_orders_columns', array( $this, 'tazapay_add_payment_column_to_myaccount' ) );
-        // add_action( 'woocommerce_my_account_my_orders_column_pay-order', array( $this,'tazapay_add_pay_for_order_to_payment_column_myaccount' ) );
+        add_filter( 'woocommerce_my_account_my_orders_columns', array( $this, 'tazapay_add_payment_column_to_myaccount' ) );
+        add_action( 'woocommerce_my_account_my_orders_column_pay-order', array( $this,'tazapay_add_pay_for_order_to_payment_column_myaccount' ) );
 
-        //add_action( 'woocommerce_view_order', array( $this, 'tazapay_view_order_and_thankyou_page' ), 20 );
+        add_action( 'woocommerce_view_order', array( $this, 'tazapay_view_order_and_thankyou_page' ), 20 );
         add_action( 'woocommerce_thankyou', array( $this, 'tazapay_view_order_and_thankyou_page' ), 20 );
         //add_filter( 'woocommerce_gateway_icon', array( $this, 'tazapay_woocommerce_icons'), 10, 2 );
         add_filter( 'woocommerce_available_payment_gateways', array( $this, 'tazapay_woocommerce_available_payment_gateways' ) );
@@ -857,7 +857,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             $payment_url = get_post_meta( $order->get_id(), 'redirect_url', true );
             
             if( isset($payment_url) && !empty($payment_url) ){
-                printf( '<a class="woocommerce-button button pay" href="%s">%s</a>', $payment_url, __("Pay now", "wc-tp-payment-gateway" ) );
+                printf( '<a class="woocommerce-button button pay" href="%s">%s</a>', $payment_url, __("Pay With Escrow", "wc-tp-payment-gateway" ) );
             }
         }
     }
@@ -887,6 +887,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             
             $user_email     = $order->get_billing_email();
             $txn_no         = get_post_meta( $order_id, 'txn_no', true );
+            $redirect_url   = get_post_meta( $order_id, 'redirect_url', true );
 
             $user   = get_user_by( 'email', $user_email );
             $userId = $user->ID;
@@ -898,7 +899,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             }
             ?>
             <h2><?php echo __('Tazapay Information', 'wc-tp-payment-gateway'); ?></h2>
-            <p><?php echo __('TazaPay Escrow', 'wc-tp-payment-gateway'); ?></p>
+            <p><?php echo __('Pay With Escrow', 'wc-tp-payment-gateway'); ?></p>
             <table class="woocommerce-table shop_table gift_info">
                 <tfoot>
                     <tr>
@@ -913,6 +914,12 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                     <tr>
                         <th scope="row"><?php echo __('Escrow txn_no', 'wc-tp-payment-gateway'); ?></th>
                         <td><?php echo $txn_no; ?></td>
+                    </tr>
+                    <?php } ?>
+                    <?php if($redirect_url){ ?>
+                    <tr>
+                        <th scope="row"><?php echo __('Payment', 'wc-tp-payment-gateway'); ?></th>
+                        <td><?php printf( '<a class="woocommerce-button button pay" href="%s">%s</a>', $redirect_url, __("Pay With Escrow", "wc-tp-payment-gateway" ) ); ?></td>
                     </tr>
                     <?php } ?>
                 </tfoot>
