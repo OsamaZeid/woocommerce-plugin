@@ -24,8 +24,7 @@ This plugin enables your WooCommerce powered platform to start accepting interna
 7. Add your 'API Key' and 'Secret' (obtained from Tazapay after completign Step 1) in the Tazapay Payment Plugin management in the default WooCommerce payment tab
 8. Please ensure that "TazaPay Users" is checked (child of WooCommerce menu)
 
-**Requirements**
-
+## Requirements
 - WordPress Stable
 - Wordpress version 5.8
 - Php version 7.4
