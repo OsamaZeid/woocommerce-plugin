@@ -8,18 +8,19 @@ Please install the module via upload package.
 
 Download package from https://github.com/tazapay/woocommerce-plugin.git
 
-Please Follow below steps.
+Please follow below steps.
 
-1) Install WooCommerce and active
-2) Download WooCommerce TazaPay Payment Gateway ( https://github.com/tazapay/woocommerce-plugin ).
-3) Go to the admin panel upload zip in  plugins menu and active
-4) Then go to default woocommerce settings menu and click payments tab , Enable TazaPay Gateway with configration
-5) Also check "TazaPay Users" menu child of WooCommerce menu.
+1) Install WooCommerce plugin and active
+2) Download WooCommerce TazaPay Payment Gateway from ( https://github.com/tazapay/woocommerce-plugin ).
+3) Go to the admin panel, Add new plugin and upload zip file.
+4) Activate plugin WooCommerce TazaPay Payment Gateway
+5) Go to woocommerce settings menu and click on payments tab , Enable TazaPay Gateway with configration
+6) Go to Woocommerce->TazaPay Users to check all customers who have paid using TazaPay payment.
 
 **Requirements**
 
 - WordPress Stable
-- Wordpress version 5.8
+- WordPress version 5.8
 - Php version 7.4
 - WooCommerce 5.5.2
 
@@ -28,7 +29,7 @@ Please Follow below steps.
 - Simply create account via tazapay site (https://share.hsforms.com/1RcEF-LvgQv-6fArLsYSRwA4qumh) and use API Key and Secret Key in default woocommerce payment tab with tazapay manage.
 - Easily manage in checkout page with TazaPay payment method selection.
 - Pay with your TazaPay via our super-cool payment gateway.
-- WeChatPay, Bank Transfer, Mastercard, VISA
+- Supporting payment method WeChatPay, Bank Transfer, Mastercard, VISA
 
 
 ## License

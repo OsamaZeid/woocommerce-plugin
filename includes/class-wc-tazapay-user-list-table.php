@@ -1,5 +1,4 @@
 <?php
-
 if(!class_exists('WP_List_Table')){
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
@@ -71,46 +70,37 @@ class TazaPay_User_List_Table extends WP_List_Table {
 
     private function table_data()
     {
+        global $wpdb;
+
         $data = array();
         $userArray = array();
 
-        $args = array(
-            'role'    => 'Customer',
-            'orderby' => 'ID',
-            'order'   => 'DESC'
-        );
-        $users = get_users( $args );
-        if($users){
-            foreach ( $users as $user ){
-                $userArray[] = $user;
-            }
-        }
+        $tablename      = $wpdb->prefix.'tazapay_user';
+        $results = $wpdb->get_results("SELECT * FROM $tablename");
 
-        foreach($userArray as $userDetails){
+        foreach($results as $result){
 
-            $usertype           = get_user_meta( $userDetails->ID, 'user_type', true );
-            $usertype           = !empty($usertype) ? $usertype : 'buyer';
-
-            $first_name         = get_user_meta( $userDetails->ID, 'first_name', true );
-            $last_name          = get_user_meta( $userDetails->ID, 'last_name', true );
-            $buyer              = $usertype;
-            $account_id         = get_user_meta( $userDetails->ID, 'account_id', true );
-            $contact_code       = get_user_meta( $userDetails->ID, 'contact_code', true );
-            $contact_number     = get_user_meta( $userDetails->ID, 'contact_number', true );
-            $country_name       = get_user_meta( $userDetails->ID, 'billing_country', true );
-            $ind_bus_type       = get_user_meta( $userDetails->ID, 'ind_bus_type', true );
-            $business_name      = get_user_meta( $userDetails->ID, 'business_name', true );
-            $partners_customer  = get_user_meta( $userDetails->ID, 'partners_customer_id', true );
-            $created            = get_user_meta( $userDetails->ID, 'created', true );            
-            
-            $countryName    = WC()->countries->countries[$country_name];
+            $first_name         = $result->first_name;
+            $last_name          = $result->last_name;
+            $user_type          = $result->user_type;
+            $contact_code       = $result->contact_code;
+            $contact_number     = $result->contact_number;
+            $country_name       = $result->country;
+            $ind_bus_type       = $result->ind_bus_type;
+            $business_name      = $result->business_name;
+            $partners_customer  = $result->partners_customer_id;
+            $created            = $result->created;
+            $environment        = $result->environment;
+            $account_id         = $result->account_id;
+            $countryName        = WC()->countries->countries[$country_name];
+          
 
             if($account_id){
                 $data[] = array(
-                    'id'                => $userDetails->ID,
+                    'id'                => $result->id,
                     'account_id'        => $account_id,
-                    'user_type'         => $buyer,
-                    'email'             => $userDetails->user_email,
+                    'user_type'         => $user_type,
+                    'email'             => $result->email,
                     'first_name'        => $first_name,
                     'last_name'         => $last_name,
                     'contact_code'      => $contact_code,
@@ -120,6 +110,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
                     'created'           => $created,
                     'business_name'     => $business_name,
                     'partners_customer' => $partners_customer,
+                    'environment'       => $environment,
                 );
             }            
         }            
@@ -141,6 +132,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
             case 'created':
             case 'business_name':
             case 'partners_customer':
+            case 'environment':
                 return $item[ $column_name ];
 
             default:
@@ -226,6 +218,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
             'contact_code'      => __( 'Contact Code', 'wc-tp-payment-gateway' ),
             'contact_number'    => __( 'Contact Number', 'wc-tp-payment-gateway' ),
             'country_name'      => __( 'Country', 'wc-tp-payment-gateway' ),            
+            'environment'       => __( 'Environment', 'wc-tp-payment-gateway' ),            
             'created'           => __( 'Created', 'wc-tp-payment-gateway' ),
         );
         return $columns;
@@ -248,7 +241,8 @@ class TazaPay_User_List_Table extends WP_List_Table {
     function get_sortable_columns() {
         $sortable_columns = array(
              'title'         => array('id',false),
-             'country_name'  => array('country_name',false)
+             'country_name'  => array('country_name',false),
+             'environment'   => array('environment',false)
         );
         return $sortable_columns;
     }
@@ -463,7 +457,7 @@ function tazapay_render_list_page(){
         <div id="icon-users" class="icon32"><br/></div>
         <h2><?php echo __( 'TazaPay Users', 'wc-tp-payment-gateway' ); ?></h2>
         <div id="response-message">
-            <?php if($_GET['msg']){ ?>
+            <?php if(isset($_GET['msg'])){ ?>
             <div class="notice notice-success">        
             <?php if($_GET['msg'] == 'delete'){ ?>
             <p><?php echo __('TazaPay user successfully deleted.','wc-tp-payment-gateway'); ?></p>
@@ -487,21 +481,24 @@ function tazapay_render_list_page(){
 function tazapay_render_edit_page(){
 
     global $wpdb;   
-    $table = $wpdb->prefix.'users';
-    $user_id = $_GET['user'];
+    $user_id    = $_GET['user'];
+    $tablename  = $wpdb->prefix.'tazapay_user';
+    $row_user   = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '". $user_id ."'");
 
     if('edit'===$_REQUEST['action'])
     {    
-         $row_user = $wpdb->get_row("SELECT * FROM ".$table." where ID='".$user_id."'" );
+         $row_user = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '". $user_id ."'");
 
          if(count($row_user) > 0)
          {              
-            $account_id = get_user_meta( $user_id, 'account_id', true );
+            $account_id = $row_user->account_id;
             
             if(isset($_POST['submit'])){
 
                 $new_value = !empty($_POST['account_id']) ? $_POST['account_id'] : '';
-                update_user_meta( $user_id, 'account_id', $new_value );
+
+                $wpdb->query( $wpdb->prepare( "UPDATE $tablename SET account_id = %s WHERE ID = %s", $new_value, $user_id ) );
+
                 $_GET['msg'] = 'updated';
             }
             ?>

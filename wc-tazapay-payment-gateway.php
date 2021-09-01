@@ -2,7 +2,7 @@
 /*
  * Plugin Name:       WooCommerce TazaPay Payment Gateway
  * Plugin URI:        https://www.logicrays.com/
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Description:       Pay with your TazaPay via our super-cool payment gateway.
  * Version:           1.0.0
  * Author:            Logicrays
  * Author URI:        https://www.logicrays.com

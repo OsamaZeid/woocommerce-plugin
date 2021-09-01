@@ -1,15 +1,26 @@
 <div class="wrap tazapay-account-information">
 <?php
-global $woocommerce;
+global $woocommerce, $wpdb;
+
 $countries_obj          = new WC_Countries();
 $countries              = $countries_obj->__get('countries');
 
 $woocommerce_tz_tazapay_settings = get_option( 'woocommerce_tz_tazapay_settings' );
+$sandboxmode = $woocommerce_tz_tazapay_settings['sandboxmode'];
 
-$user_email         = $woocommerce_tz_tazapay_settings['seller_email'];
-$user               = get_user_by( 'email', $user_email );
-$user_id            = $user->ID;
-$account_id         = get_user_meta( $user_id, 'account_id', true );
+if($sandboxmode == 'yes'){
+    $api_url      = 'https://api-sandbox.tazapay.com';
+    $environment  = 'sandbox';
+}else{
+    $api_url = 'https://api.tazapay.com';
+    $environment  = 'production';
+}
+
+$user_email     = $woocommerce_tz_tazapay_settings['seller_email'];               
+$tablename      = $wpdb->prefix.'tazapay_user';
+$seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $user_email ."' AND environment = '". $environment ."'");
+
+$account_id     = $seller_results[0]->account_id;
 
 if( empty($account_id) ){    
 
@@ -24,19 +35,14 @@ if(isset($_POST['submit'])){
         $phone_number           = !empty($_POST['phone_number']) ? $_POST['phone_number'] : '';
         $partners_customer_id   = !empty($_POST['partners_customer_id']) ? $_POST['partners_customer_id'] : '';
         $country                = !empty($_POST['country']) ? $_POST['country'] : '';
-
-        if(empty($user_email)){
-          $user_email           = !empty($_POST['email']) ? $_POST['email'] : '';
-        }else{
-          $user_email           = $woocommerce_tz_tazapay_settings['seller_email'];
-        }
+        $seller_email             = $woocommerce_tz_tazapay_settings['seller_email'];
 
         //$countryName          = WC()->countries->countries[$country];
         $phoneCode              = $apiRequestCall->getPhoneCode($country);
 
         if($business_name){
             $args = array(
-                "email"                 => $user_email,
+                "email"                 => $seller_email,
                 "country"               => $country,
                 "contact_code"          => $phoneCode,
                 "contact_number"        => $phone_number,            
@@ -46,7 +52,7 @@ if(isset($_POST['submit'])){
             );
         }else{
             $args = array(
-                "email"                 => $user_email,
+                "email"                 => $seller_email,
                 "first_name"            => $first_name,
                 "last_name"             => $last_name,
                 "contact_code"          => $phoneCode,
@@ -57,14 +63,6 @@ if(isset($_POST['submit'])){
             );
         }        
 
-        $sandboxmode = $woocommerce_tz_tazapay_settings['sandboxmode'];
-
-        if($sandboxmode == 'yes'){
-            $api_url = 'https://api-sandbox.tazapay.com';
-        }else{
-            $api_url = 'https://api.tazapay.com';
-        }
-
         //$api_url  = 'https://api-sandbox.tazapay.com/v1/user';
         $api_endpoint = "/v1/user";
         $api_url  = $api_url.'/v1/user';
@@ -73,27 +71,26 @@ if(isset($_POST['submit'])){
 
         if ( $createUser->status == 'success' ) {
 
-            $randomuser_name  = $first_name.' '.$last_name;
-            $user_name  = $apiRequestCall->random_username($randomuser_name);            
+            $tablename  = $wpdb->prefix.'tazapay_user';
+            $account_id = $createUser->data->account_id;
 
-            $user_id    = username_exists( $user_name );
-            if ( !$user_id and email_exists($user_email) == false ) {              
-              $random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );            
-              $user_id = wc_create_new_customer( $user_email, $user_name, $random_password );
-            } else {
-              $random_password = __('User already exists.  Password inherited.');
-            }
-            update_user_meta( $user_id, 'account_id', $createUser->data->account_id );
-            update_user_meta( $user_id, 'first_name', $first_name );
-            update_user_meta( $user_id, 'last_name', $last_name );
-            update_user_meta( $user_id, 'business_name', $business_name );
-            update_user_meta( $user_id, 'contact_code', $phoneCode );
-            update_user_meta( $user_id, 'contact_number', $phone_number );
-            update_user_meta( $user_id, 'billing_country', $country );
-            update_user_meta( $user_id, 'ind_bus_type', $indbustype );
-            update_user_meta( $user_id, 'partners_customer_id', $partners_customer_id );
-            update_user_meta( $user_id, 'created', current_time( 'mysql' ) );
-            update_user_meta( $user_id, 'user_type', 'seller' );
+            $wpdb->insert( $tablename, array(
+                'account_id'           => $account_id, 
+                'user_type'            => "seller",
+                'email'                => $seller_email, 
+                'first_name'           => $first_name,
+                'last_name'            => $last_name, 
+                'contact_code'         => $phoneCode, 
+                'contact_number'       => $phone_number,
+                'country'              => $country, 
+                'ind_bus_type'         => $indbustype,
+                'business_name'        => $business_name, 
+                'partners_customer_id' => $partners_customer_id, 
+                'environment'          => $environment,
+                'created'              => current_time( 'mysql' ) ),
+                array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' ) 
+            );
+            
             ?>
             <div class="notice notice-success is-dismissible">
               <p><?php _e( $createUser->message, 'wc-tp-payment-gateway' ); ?></p>
@@ -130,7 +127,7 @@ if(isset($_POST['submit'])){
 
 echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2><hr>';
 
-$account_id = get_user_meta( $user_id, 'account_id', true );
+//$account_id = get_user_meta( $user_id, 'account_id', true );
 
 ?>
 <form method="post" name="accountform" action="#" class="tazapay_form">
@@ -189,18 +186,19 @@ $account_id = get_user_meta( $user_id, 'account_id', true );
 <?php
 }else{
 
-$first_name         = get_user_meta( $user_id, 'first_name', true );
-$last_name          = get_user_meta( $user_id, 'last_name', true );
-$buyer              = get_user_meta( $user_id, 'user_type', true );
-$contact_code       = get_user_meta( $user_id, 'contact_code', true );
-$contact_number     = get_user_meta( $user_id, 'contact_number', true );
-$country_name       = get_user_meta( $user_id, 'billing_country', true );
-$ind_bus_type       = get_user_meta( $user_id, 'ind_bus_type', true );
-$business_name      = get_user_meta( $user_id, 'business_name', true );
-$partners_customer  = get_user_meta( $user_id, 'partners_customer_id', true );
-$created            = get_user_meta( $user_id, 'created', true );
+$first_name         = $seller_results[0]->first_name;
+$last_name          = $seller_results[0]->last_name;
+$user_type              = $seller_results[0]->user_type;
+$contact_code       = $seller_results[0]->contact_code;
+$contact_number     = $seller_results[0]->contact_number;
+$country_name       = $seller_results[0]->country;
+$ind_bus_type       = $seller_results[0]->ind_bus_type;
+$business_name      = $seller_results[0]->business_name;
+$partners_customer  = $seller_results[0]->partners_customer_id;
+$created            = $seller_results[0]->created;
+$environment        = $seller_results[0]->environment;
 
-$countryName    = WC()->countries->countries[$country_name];
+$countryName        = WC()->countries->countries[$country_name];
 
 echo '<h2>'.__('TazaPay Account Information','wc-tp-payment-gateway'). '</h2><hr>';
 ?>
@@ -211,7 +209,7 @@ echo '<h2>'.__('TazaPay Account Information','wc-tp-payment-gateway'). '</h2><hr
   </tr>
   <tr>
     <th><?php echo __('User Type:','wc-tp-payment-gateway'); ?></th>
-    <td><?php echo $buyer; ?></td>
+    <td><?php echo $user_type; ?></td>
   </tr>
   <tr>
     <th><?php echo __('Entity Type:','wc-tp-payment-gateway'); ?></th>
@@ -251,6 +249,10 @@ echo '<h2>'.__('TazaPay Account Information','wc-tp-payment-gateway'). '</h2><hr
   <tr>
     <th><?php echo __('Partners Customer ID:','wc-tp-payment-gateway'); ?></th>
     <td><?php echo $partners_customer; ?></td>
+  </tr>
+   <tr>
+    <th><?php echo __('Environment:','wc-tp-payment-gateway'); ?></th>
+    <td><?php echo $environment; ?></td>
   </tr>
   <tr>
     <th><?php echo __('Created At:','wc-tp-payment-gateway'); ?></th>
