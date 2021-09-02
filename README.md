@@ -16,7 +16,7 @@ This plugin enables your WooCommerce powered platform to start accepting interna
 
 ### Get Started with Tazapay Payments Plugin
 1. Request your API Key and Secret by signing up here: https://share.hsforms.com/1RcEF-LvgQv-6fArLsYSRwA4qumh
-2. Install WooCommerce and activate your account
+2. Install WooCommerce and activate your plugin
 3. Download the Tazapay payment module from: https://github.com/tazapay/woocommerce-plugin.git
 4. Go to the 'Admin Panel' and upload the zipped file you downloaded in the 'Plugins' option and activate
 5. Go to the default WooCommerce settings menu and click on the 'Payments' tab 
