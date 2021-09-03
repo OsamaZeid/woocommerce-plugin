@@ -83,3 +83,4 @@ jQuery(document).ready(function($) {
       $('.tazapay-multiseller').closest("tr").show();
     }
   });
+});  
