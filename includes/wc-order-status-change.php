@@ -90,16 +90,14 @@ function tazapay_order_change() {
 
 	foreach ($orderList as $orderPost) {
 
-		$order 			= new WC_Order( $orderPost->order_id );
-
+		$order 			    = new WC_Order( $orderPost->order_id );
 		$paymentMethod 	= get_post_meta( $orderPost->order_id, '_payment_method', true );
-		$txn_no 		= get_post_meta( $orderPost->order_id, 'txn_no', true );
+		$txn_no 		    = get_post_meta( $orderPost->order_id, 'txn_no', true );
 		$getEscrowstate = tazapay_request_api_order_status($txn_no);
 
-		if( $getEscrowstate->status == 'success' && $paymentMethod == 'tz_tazapay' && $getEscrowstate->data->state == 'Payment_Recieved') {
+		if( $getEscrowstate->status == 'success' && $paymentMethod == 'tz_tazapay' && ( $getEscrowstate->data->state == 'Payment_Recieved' || $getEscrowstate->data->sub_state == 'Payment_Done' ) )  {
 	    	$order->update_status( 'processing' );
 	    }
-
 	    if( $getEscrowstate->status == 'success' && $paymentMethod == 'tz_tazapay' && $getEscrowstate->data->sub_state == 'Payment_Failed') {
 	    	$order->update_status( 'cancelled' );
 	    }	    

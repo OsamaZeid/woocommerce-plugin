@@ -61,7 +61,25 @@ jQuery(function() {
 });
 
 
-// jQuery(document).ready(function($) {
-//   $('#woocommerce_tz_tazapay_seller_name').attr('required', true);
-//   $('#woocommerce_tz_tazapay_seller_email').attr('required', true);
-// });
+jQuery(document).ready(function($) {
+  $('#woocommerce_tz_tazapay_title').attr('required', true);
+  
+  if($('#woocommerce_tz_tazapay_tazapay_seller_type').val() == 'singleseller'){
+    $('.tazapay-multiseller').closest("tr").hide();
+    $('.tazapay-singleseller').closest("tr").show();
+  }
+  if($('#woocommerce_tz_tazapay_tazapay_seller_type').val() == 'multiseller'){
+    $('.tazapay-singleseller').closest("tr").hide();
+    $('.tazapay-multiseller').closest("tr").show();
+  }
+
+  $('#woocommerce_tz_tazapay_tazapay_seller_type').change(function () {
+    if(this.value == 'singleseller'){
+      $('.tazapay-multiseller').closest("tr").hide();
+      $('.tazapay-singleseller').closest("tr").show();
+    }
+    if(this.value == 'multiseller'){
+      $('.tazapay-singleseller').closest("tr").hide();
+      $('.tazapay-multiseller').closest("tr").show();
+    }
+  });

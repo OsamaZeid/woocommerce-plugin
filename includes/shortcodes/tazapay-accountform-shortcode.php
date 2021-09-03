@@ -5,8 +5,9 @@ global $woocommerce, $wpdb;
 $countries_obj          = new WC_Countries();
 $countries              = $countries_obj->__get('countries');
 
-$woocommerce_tz_tazapay_settings = get_option( 'woocommerce_tz_tazapay_settings' );
-$sandboxmode = $woocommerce_tz_tazapay_settings['sandboxmode'];
+$woocommerce_tz_tazapay_settings    = get_option( 'woocommerce_tz_tazapay_settings' );
+$sandboxmode                        = $woocommerce_tz_tazapay_settings['sandboxmode'];
+$tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
 
 if($sandboxmode == 'yes'){
     $api_url      = 'https://api-sandbox.tazapay.com';
@@ -16,10 +17,20 @@ if($sandboxmode == 'yes'){
     $environment  = 'production';
 }
 
-$user_email     = $woocommerce_tz_tazapay_settings['seller_email'];               
+if ( is_user_logged_in() && $tazapay_seller_type == 'multiseller' ) {
+
+    $seller_user    = get_userdata(get_current_user_id());
+    $user_email     = $seller_user->user_email;
+    //echo implode(', ', $seller_user->roles);
+
+}else{
+
+    $user_email     = $woocommerce_tz_tazapay_settings['seller_email'];               
+
+}
+
 $tablename      = $wpdb->prefix.'tazapay_user';
 $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $user_email ."' AND environment = '". $environment ."'");
-
 $account_id     = $seller_results[0]->account_id;
 
 if( empty($account_id) ){    
@@ -188,7 +199,7 @@ echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2><hr>';
 
 $first_name         = $seller_results[0]->first_name;
 $last_name          = $seller_results[0]->last_name;
-$user_type              = $seller_results[0]->user_type;
+$user_type          = $seller_results[0]->user_type;
 $contact_code       = $seller_results[0]->contact_code;
 $contact_number     = $seller_results[0]->contact_number;
 $country_name       = $seller_results[0]->country;
