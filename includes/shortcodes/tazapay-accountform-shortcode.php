@@ -8,6 +8,7 @@ $countries              = $countries_obj->__get('countries');
 $woocommerce_tz_tazapay_settings    = get_option( 'woocommerce_tz_tazapay_settings' );
 $sandboxmode                        = $woocommerce_tz_tazapay_settings['sandboxmode'];
 $tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
+$tazapay_multi_seller_plugin        = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
 
 if($sandboxmode == 'yes'){
     $api_url      = 'https://api-sandbox.tazapay.com';
@@ -18,15 +19,10 @@ if($sandboxmode == 'yes'){
 }
 
 if ( is_user_logged_in() && $tazapay_seller_type == 'multiseller' ) {
-
     $seller_user    = get_userdata(get_current_user_id());
     $user_email     = $seller_user->user_email;
-    //echo implode(', ', $seller_user->roles);
-
 }else{
-
-    $user_email     = $woocommerce_tz_tazapay_settings['seller_email'];               
-
+    $user_email     = $woocommerce_tz_tazapay_settings['seller_email'];
 }
 
 $tablename      = $wpdb->prefix.'tazapay_user';
@@ -46,7 +42,7 @@ if(isset($_POST['submit'])){
         $phone_number           = !empty($_POST['phone_number']) ? $_POST['phone_number'] : '';
         $partners_customer_id   = !empty($_POST['partners_customer_id']) ? $_POST['partners_customer_id'] : '';
         $country                = !empty($_POST['country']) ? $_POST['country'] : '';
-        $seller_email             = $woocommerce_tz_tazapay_settings['seller_email'];
+        $seller_email           = $user_email;
 
         //$countryName          = WC()->countries->countries[$country];
         $phoneCode              = $apiRequestCall->getPhoneCode($country);
@@ -107,7 +103,11 @@ if(isset($_POST['submit'])){
               <p><?php _e( $createUser->message, 'wc-tp-payment-gateway' ); ?></p>
             </div>
             <?php
-            wp_redirect( admin_url('?page=tazapay-signup-form'), 301 );
+            if(is_admin()){
+                wp_redirect( admin_url('?page=tazapay-signup-form'), 301 );
+            }else{
+                wp_redirect( get_the_permalink().'settings/tazapay-information/', 301 );
+            }
             exit();
 
         }else{
@@ -135,38 +135,44 @@ if(isset($_POST['submit'])){
         }
 } 
 
-
 echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2><hr>';
 
-//$account_id = get_user_meta( $user_id, 'account_id', true );
-
 ?>
-<form method="post" name="accountform" action="#" class="tazapay_form">
-<div class="container">
-    <?php if(!empty($account_id)){?>
-    <div class="seller-id">
-    <?php
-        echo sprintf(__("<span><strong>Seller Tazapay account UUID: </strong></span><span>%s</span>", 'wc-tp-payment-gateway'), $account_id);
-    ?>   
-    </div><br>
-    <?php } ?>
-    <label for="firstname"><b><?php echo __('Ind Bus Type','wc-tp-payment-gateway'); ?></b></label>
-    <select id="indbustype" name="indbustype">
+<form method="post" name="accountform" action="" class="tazapay_form dokan-form-horizontal">
+<div class="container">    
+    <div class="dokan-form-group">
+    <label for="firstname" class="dokan-w3 dokan-control-label"><b><?php echo __('Ind Bus Type','wc-tp-payment-gateway'); ?></b></label>
+    <div class="dokan-w5">
+    <select id="indbustype" name="indbustype" class="dokan-form-control">
         <option value=""><?php echo __('Select Type','wc-tp-payment-gateway'); ?></option>
         <option value="Individual"><?php echo __('Individual','wc-tp-payment-gateway'); ?></option>
         <option value="Business"><?php echo __('Business','wc-tp-payment-gateway'); ?></option>
     </select>
+    </div>
+    </div>
     <div id="individual">
-        <label for="firstname"><b><?php echo __('First Name','wc-tp-payment-gateway'); ?></b></label>
-        <input type="text" placeholder="First Name" name="first_name" id="first_name">        
-        <label for="lastname"><b><?php echo __('Last Name','wc-tp-payment-gateway'); ?></b></label>
-        <input type="text" placeholder="Last Name" name="last_name" id="last_name">
+    <div class="dokan-form-group">
+        <label for="firstname" class="dokan-w3 dokan-control-label"><b><?php echo __('First Name','wc-tp-payment-gateway'); ?></b></label>
+        <div class="dokan-w5">
+            <input type="text" placeholder="First Name" name="first_name" id="first_name">
+        </div>
+        </div>
+        <div class="dokan-form-group">     
+        <label for="lastname" class="dokan-w3 dokan-control-label"><b><?php echo __('Last Name','wc-tp-payment-gateway'); ?></b></label>
+        <div class="dokan-w5">
+            <input type="text" placeholder="Last Name" name="last_name" id="last_name">
+        </div>
     </div>
-    <div id="business">
-        <label for="businessname"><b><?php echo __('Business Name','wc-tp-payment-gateway'); ?></b></label>
+</div>
+    <div id="business" class="dokan-form-group">
+        <label for="businessname" class="dokan-w3 dokan-control-label"><b><?php echo __('Business Name','wc-tp-payment-gateway'); ?></b></label>
+        <div class="dokan-w5">
         <input type="text" placeholder="Business Name" name="business_name" id="business_name">
+        </div>
     </div>
-    <label for="email"><b><?php echo __('E-Mail','wc-tp-payment-gateway'); ?></b></label>
+    <div class="dokan-form-group">
+    <label for="email" class="dokan-w3 dokan-control-label"><b><?php echo __('E-Mail','wc-tp-payment-gateway'); ?></b></label>
+    <div class="dokan-w5">
     <?php 
     if($user_email){
     ?>
@@ -176,12 +182,24 @@ echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2><hr>';
     <?php 
     } 
     ?>
-    <label for="phonenumber"><b><?php echo __('Phone Number','wc-tp-payment-gateway'); ?></b></label>
-    <input type="text" placeholder="Phone Number" name="phone_number" id="phone_number">
-    <label for="partnerscustomerid"><b><?php echo __('Partners Customer ID','wc-tp-payment-gateway'); ?></b></label>
+    </div>
+    </div>
+    <div class="dokan-form-group">
+    <label for="phonenumber" class="dokan-w3 dokan-control-label"><b><?php echo __('Phone Number','wc-tp-payment-gateway'); ?></b></label>
+    <div class="dokan-w5">
+        <input type="text" placeholder="Phone Number" name="phone_number" id="phone_number">
+    </div>
+    </div>
+    <div class="dokan-form-group">
+    <label for="partnerscustomerid" class="dokan-w3 dokan-control-label"><b><?php echo __('Partners Customer ID','wc-tp-payment-gateway'); ?></b></label>
+    <div class="dokan-w5">
     <input type="text" placeholder="Partners Customer ID" name="partners_customer_id" id="partners_customer_id">
-    <label for="country"><b><?php echo __('Country','wc-tp-payment-gateway'); ?></b></label>
-    <select id="country" name="country">
+    </div>
+    </div>
+    <div class="dokan-form-group">
+    <label for="country" class="dokan-w3 dokan-control-label"><b><?php echo __('Country','wc-tp-payment-gateway'); ?></b></label>
+    <div class="dokan-w5">
+    <select id="country" name="country" class="dokan-form-control">
         <option value=""><?php echo __('Select country','wc-tp-payment-gateway'); ?></option>
         <?php
         foreach($countries as $country_code => $country){
@@ -191,7 +209,9 @@ echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2><hr>';
         }
         ?>
     </select>
-    <input type="submit" class="registerbtn" name="submit" value="<?php echo __('Submit','wc-tp-payment-gateway'); ?>">
+    </div>
+    </div>
+    <input type="submit" class="registerbtn dokan-btn dokan-btn-danger dokan-btn-theme" name="submit" value="<?php echo __('Submit','wc-tp-payment-gateway'); ?>">
   </div>  
 </form>
 <?php
@@ -211,7 +231,9 @@ $environment        = $seller_results[0]->environment;
 
 $countryName        = WC()->countries->countries[$country_name];
 
-echo '<h2>'.__('TazaPay Account Information','wc-tp-payment-gateway'). '</h2><hr>';
+if ( $tazapay_seller_type != 'multiseller' && $tazapay_multi_seller_plugin == 'dokan' ) {
+    echo '<h2>'.__('TazaPay Account Information','wc-tp-payment-gateway'). '</h2><hr>';
+}
 ?>
 <table class="wp-list-table widefat fixed striped table-view-list">
   <tr>

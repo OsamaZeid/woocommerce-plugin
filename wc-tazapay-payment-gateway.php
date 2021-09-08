@@ -2,7 +2,7 @@
 /*
  * Plugin Name:       WooCommerce TazaPay Payment Gateway
  * Plugin URI:        https://www.logicrays.com/
- * Description:       Pay with your TazaPay via our super-cool payment gateway..
+ * Description:       Pay with your TazaPay via our super-cool payment gateway.
  * Version:           1.0.0
  * Author:            Logicrays
  * Author URI:        https://www.logicrays.com
@@ -61,7 +61,10 @@ function tazapay_add_gateway_class( $gateways ) {
 add_action( 'wp_enqueue_scripts', 'tazapay_frontend_enqueue_styles' );
 function tazapay_frontend_enqueue_styles()
 {
-    wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-frontend.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');    
+    wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-frontend.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');
+    wp_enqueue_script( 'tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
+    
+    wp_enqueue_script( 'tazapay-admin', TAZAPAY_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);   
 }
 
 /*

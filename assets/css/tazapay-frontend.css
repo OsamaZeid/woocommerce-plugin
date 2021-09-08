@@ -44,3 +44,9 @@
     color: #fff !important;
 }
 
+.tazapay_form.dokan-form-horizontal input {
+    width: 100%;
+}
+.tazapay_form.dokan-form-horizontal input[type="submit"] {
+    width: auto;
+}

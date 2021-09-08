@@ -1,4 +1,5 @@
 <?php
+
 class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
     /**
@@ -680,7 +681,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
     */
     public function process_payment( $order_id ) {
 
-        global $woocommerce;
+        global $woocommerce, $wpdb;
 
         // we need it to get any order detailes
         $order      = wc_get_order( $order_id );
@@ -745,7 +746,6 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             }
             if ( $result->status == 'success' ) {
 
-                global $wpdb;                
                 $tablename  = $wpdb->prefix.'tazapay_user';
                 $account_id = $result->data->account_id;
 
@@ -779,12 +779,39 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             $listofitems   = implode(', ', $items);
             $description   = get_bloginfo( 'name' ).' : '.$listofitems;
 
+            // for singleseller
+            if( $this->tazapay_seller_type == 'singleseller' && !empty($this->seller_id) ) {
+                $seller_id = $this->seller_id;
+            }
+            // for multiseller
+            foreach ( WC()->cart->get_cart() as $cart_item ){
+                $item_name          = $cart_item['data']->get_title();            
+                $product_id         = $cart_item['data']->get_id();
+                $vendor_id          = get_post_field( 'post_author', $product_id );
+                $vendor             = get_userdata( $vendor_id );
+                $seller_email[]     = $vendor->user_email;            
+            }
+
+            $selleremail = array_unique($seller_email);
+            $sellercount = count($selleremail);
+
+            if( $sellercount == 1 && $this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'dokan' ){
+
+                $tablename      = $wpdb->prefix.'tazapay_user';
+                $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $selleremail[0] ."' AND environment = '". $this->environment ."'");
+                $seller_id     = $seller_results[0]->account_id;
+
+                if( !empty($seller_id) ) {
+                    $seller_id     = $seller_results[0]->account_id;
+                }
+            }
+
             $argsEscrow = array(
                 "txn_type"              => $this->txn_type_escrow,
                 "release_mechanism"     => $this->release_mechanism,
                 "initiated_by"          => $account_id,
                 "buyer_id"              => $account_id,
-                "seller_id"             => $this->seller_id,
+                "seller_id"             => $seller_id,
                 "txn_description"       => $description,
                 "invoice_currency"      => get_option('woocommerce_currency'),
                 "invoice_amount"        => (int) $order->get_total()
@@ -1051,10 +1078,49 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
     }  
 
     public function tazapay_woocommerce_available_payment_gateways( $available_gateways ) {
+        global $woocommerce, $wpdb;
+
         if (! is_checkout() ) return $available_gateways;  // stop doing anything if we're not on checkout page.
         if (array_key_exists('tz_tazapay',$available_gateways)) {
              $available_gateways['tz_tazapay']->order_button_text = __( 'Place Order and Pay', 'wc-tp-payment-gateway' );
         }
+
+        // for singleseller
+
+        if( $this->tazapay_seller_type == 'singleseller' && empty($this->seller_id) ) {
+            unset($available_gateways['tz_tazapay']);
+        }
+
+        // for multiseller
+
+        foreach ( WC()->cart->get_cart() as $cart_item ){
+
+            $item_name          = $cart_item['data']->get_title();            
+            $product_id         = $cart_item['data']->get_id();
+            $vendor_id          = get_post_field( 'post_author', $product_id );
+            $vendor             = get_userdata( $vendor_id );
+            $seller_email[]     = $vendor->user_email;            
+        }
+
+        $selleremail = array_unique($seller_email);
+        $sellercount = count($selleremail);
+
+        if($sellercount > 1){
+
+            unset($available_gateways['tz_tazapay']);
+
+        }else{
+
+            $tablename      = $wpdb->prefix.'tazapay_user';
+            $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $selleremail[0] ."' AND environment = '". $this->environment ."'");
+            $account_id     = $seller_results[0]->account_id;
+
+            if( $this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'dokan' && empty($account_id) ) {
+                unset($available_gateways['tz_tazapay']);
+            }
+        }
+
+        
         return $available_gateways;
     }
 
@@ -1081,8 +1147,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 echo '<p><strong>Escrow sub_state:</strong> ' .$getEscrowstate->data->sub_state. '</p>';
             }
             ?>
-            <a href="<?php echo $order->get_edit_order_url(); ?>&order-status=true" class="order-status-response button button-primary"><?php echo __( 'Refresh Status', 'wc-tp-payment-gateway' ); ?></a>
-            <div class="order-status-response"></div>                         
+            <a href="<?php echo $order->get_edit_order_url(); ?>&order-status=true" class="order-status-response button button-primary"><?php echo __( 'Refresh Status', 'wc-tp-payment-gateway' ); ?></a>                              
         </div>
         <?php 
         }
@@ -1092,4 +1157,50 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 add_action( 'add_meta_boxes', 'remove_shop_order_meta_boxe', 90 );
 function remove_shop_order_meta_boxe() {
     remove_meta_box( 'postcustom', 'shop_order', 'normal' );
+}
+
+add_filter( 'manage_edit-shop_order_columns', 'custom_shop_order_column', 20 );
+function custom_shop_order_column($columns)
+{
+    $reordered_columns = array();
+
+    // Inserting columns to a specific location
+    foreach( $columns as $key => $column){
+        $reordered_columns[$key] = $column;
+        if( $key ==  'order_status' ){
+            // Inserting after "Status" column
+            $reordered_columns['tazapay-status'] = __( 'Payment Status','wc-tp-payment-gateway');
+        }
+    }
+    return $reordered_columns;
+}
+
+// Adding custom fields meta data for each new column (example)
+add_action( 'manage_shop_order_posts_custom_column' , 'custom_orders_list_column_content', 20, 2 );
+function custom_orders_list_column_content( $column, $post_id )
+{
+    switch ( $column )
+    {
+        case 'tazapay-status' :
+
+            // Get custom post meta data
+            $txn_no         = get_post_meta( $post_id, 'txn_no', true );
+            $paymentMethod  = get_post_meta( $post_id, '_payment_method', true );
+
+            if( !empty($txn_no) && $paymentMethod == 'tz_tazapay' ){
+
+            $request_api_order_status = new WC_TazaPay_Gateway();
+            $getEscrowstate = $request_api_order_status->request_api_order_status($txn_no);
+
+            //print_r($getEscrowstate);
+            echo '<small><em><b>Escrow state:</b> ' .$getEscrowstate->data->state. '</em></small><br>';
+            echo '<small><em><b>Escrow sub_state:</b> ' .$getEscrowstate->data->sub_state. '</em></small>';
+
+            }else{
+                echo 'Other Payment Method';
+            }
+
+            break;
+
+    }
 }
