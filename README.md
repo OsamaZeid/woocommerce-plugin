@@ -13,6 +13,7 @@ This plugin enables your WooCommerce powered platform to start accepting interna
 2. Low cost secured payments for buyers and sellers at best in class FX rates
 3. Easily monetize your platform by enabling a platform fee: we handle the collection and settlement on your behalf!
 4. Wide variety of payment methods accepted: Mastercard, VISA, Local Bank Transfers, and other local payment
+5. Especially relevant for B2B as large value transactions upto $1M are supported at a low cost and with escrow protection. Fully compliant with local and international regulations, all relevant trade documents are provided.
 
 ### Get Started with Tazapay Payments Plugin
 1. Request your API Key and Secret by signing up here: https://share.hsforms.com/1RcEF-LvgQv-6fArLsYSRwA4qumh
@@ -21,8 +22,15 @@ This plugin enables your WooCommerce powered platform to start accepting interna
 4. Go to the 'Admin Panel' and upload the zipped file you downloaded in the 'Plugins' option and activate
 5. Go to the default WooCommerce settings menu and click on the 'Payments' tab 
 6. Enable Tazapay Payments Plugin
-7. Add your 'API Key' and 'Secret' (obtained from Tazapay after completign Step 1) in the Tazapay Payments Plugin management in the default WooCommerce payment tab
-8. Please ensure that "TazaPay Users" is checked (child of WooCommerce menu)
+7. Add your 'API Key' and 'Secret' (obtained from Tazapay after completign Step 1) in the Tazapay Payments Plugin management in the default WooCommerce payment tab (NOTE: You can add 'sandbox' keys for test transactions and 'production' keys for real transactions)
+8. Get your seller ID by following the steps below: 
+    1. Go to WooCommerce > Settings > Payments > Find TazaPay Gateway > Click on 'Manage' button
+    2. On the same page, you will see the "Get Seller Id" button
+    3. It will show 'Create TazaPay User Form' if the seller does not have a Tazapay account
+    4. Fill all values and save
+    5. When you submit the form, you will get your seller ID (UUID) > copy this UUID
+    6. Paste this value in the field for 'Seller ID' in system configuration
+9. Please ensure that "TazaPay Users" is checked (child of WooCommerce menu)
 
 ### Requirements
 - WordPress Stable
