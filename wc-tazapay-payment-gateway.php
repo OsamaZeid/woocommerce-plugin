@@ -99,28 +99,13 @@ function tazapay_init_gateway_class() {
     require 'includes/class-wc-tazapay-account-form.php';
     require 'includes/wc-order-status-change.php';
 
-    $woocommerce_tz_tazapay_settings = get_option( 'woocommerce_tz_tazapay_settings' );
+    $woocommerce_tz_tazapay_settings    = get_option( 'woocommerce_tz_tazapay_settings' );
+    $tazapay_multi_seller_plugin        = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
+    $tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
 
-    $tazapay_multi_seller_plugin = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
-
-    if($tazapay_multi_seller_plugin == 'dokan'){
+    if($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'dokan'){
         require 'includes/dokan-add-new-menu.php';
     }
 
     load_plugin_textdomain( 'wc-tp-payment-gateway', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 }
-
-// register_activation_hook(__FILE__, 'add_tazapay_signup_page');
-// function add_tazapay_signup_page() {
-//     // Create post object
-//     $tazapay_signup_page = array(
-//       'post_title'    => 'Create TazaPay Account',
-//       'post_content'  => '[tazapay-account]',
-//       'post_status'   => 'publish',
-//       'post_author'   => 1,
-//       'post_type'     => 'page',
-//     );
-//     // Insert the post into the database
-//     wp_insert_post( $tazapay_signup_page );
-// }
-

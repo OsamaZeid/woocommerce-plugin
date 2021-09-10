@@ -18,7 +18,7 @@ if($sandboxmode == 'yes'){
     $environment  = 'production';
 }
 
-if ( is_user_logged_in() && $tazapay_seller_type == 'multiseller' ) {
+if ( is_user_logged_in() && $tazapay_seller_type == 'multiseller' && !is_admin() ) {
     $seller_user    = get_userdata(get_current_user_id());
     $user_email     = $seller_user->user_email;
 }else{

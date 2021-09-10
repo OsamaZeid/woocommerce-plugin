@@ -126,6 +126,18 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 'type'        => 'password',
                 'description' => __('TazaPay Live API Secret Key', 'wc-tp-payment-gateway' )
             ),
+            'seller_email' => array(
+                'title'       => __('Email', 'wc-tp-payment-gateway' ),
+                'type'        => 'text',
+                'description' => __('Seller\'s Email', 'wc-tp-payment-gateway' ),
+                'class'     => 'tazapay-singleseller'
+            ),            
+            'seller_id' => array(
+                'title'       => __('Seller ID', 'wc-tp-payment-gateway' ),
+                'type'        => 'text',
+                'description' => __('Tazapay account UUID <br><br><a href="?page=tazapay-signup-form" class="button-primary" target="_blank" title="Click Here">'.$text4.'</a><br>'.$text5, 'wc-tp-payment-gateway' ),
+                'class'     => 'tazapay-singleseller'
+            ),
             'tazapay_seller_type' => array(
                 'title'       => __('Seller Type', 'wc-tp-payment-gateway' ),
                 'type'        => 'select',
@@ -140,24 +152,13 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 'title'       => __('Multi Seller Marketplace Plugin', 'wc-tp-payment-gateway' ),
                 'type'        => 'select',
                 'options'     => array(
-                    'wcfm-marketplace' => __('WCFM Marketplace', 'wc-tp-payment-gateway' ),
-                    'dokan'            => __('Dokan', 'wc-tp-payment-gateway' )
+                    'dokan'            => __('Dokan', 'wc-tp-payment-gateway' ),
+                    'wcfm-marketplace' => __('WCFM Marketplace', 'wc-tp-payment-gateway' )                    
                 ),
                 'description' => __('Multi Seller Marketplace Plugin', 'wc-tp-payment-gateway' ),
                 'class'     => 'tazapay-multiseller'
             ),
-            'seller_email' => array(
-                'title'       => __('Email', 'wc-tp-payment-gateway' ),
-                'type'        => 'text',
-                'description' => __('Seller\'s Email', 'wc-tp-payment-gateway' ),
-                'class'     => 'tazapay-singleseller'
-            ),            
-            'seller_id' => array(
-                'title'       => __('Seller ID', 'wc-tp-payment-gateway' ),
-                'type'        => 'text',
-                'description' => __('Tazapay account UUID <br><br><a href="?page=tazapay-signup-form" class="button-primary" target="_blank" title="Click Here">'.$text4.'</a><br>'.$text5, 'wc-tp-payment-gateway' ),
-                'class'     => 'tazapay-singleseller'
-            ),
+            
             // 'seller_name' => array(
             //     'title'       => __('Name', 'wc-tp-payment-gateway' ),
             //     'type'        => 'text',
@@ -780,7 +781,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             $description   = get_bloginfo( 'name' ).' : '.$listofitems;
 
             // for singleseller
-            if( $this->tazapay_seller_type == 'singleseller' && !empty($this->seller_id) ) {
+            if( !empty($this->seller_id) ) {
                 $seller_id = $this->seller_id;
             }
             // for multiseller
@@ -803,6 +804,8 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
                 if( !empty($seller_id) ) {
                     $seller_id     = $seller_results[0]->account_id;
+                }else{
+                    $seller_id = $this->seller_id;
                 }
             }
 
@@ -1087,7 +1090,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
         // for singleseller
 
-        if( $this->tazapay_seller_type == 'singleseller' && empty($this->seller_id) ) {
+        if( empty($this->seller_id) ) {
             unset($available_gateways['tz_tazapay']);
         }
 
@@ -1103,20 +1106,30 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         }
 
         $selleremail = array_unique($seller_email);
-        $sellercount = count($selleremail);
+        $blogusers = get_users('role=administrator');
+        foreach ($blogusers as $user) {
+            $admin_email = $user->user_email;
+        }
 
-        if($sellercount > 1){
+        $sellercount = count($selleremail);
+        if($sellercount > 1 && $this->tazapay_seller_type != 'singleseller'){
 
             unset($available_gateways['tz_tazapay']);
 
         }else{
 
-            $tablename      = $wpdb->prefix.'tazapay_user';
-            $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $selleremail[0] ."' AND environment = '". $this->environment ."'");
-            $account_id     = $seller_results[0]->account_id;
+            if($selleremail[0] == $admin_email){
+                // no code needed
+            }
+            else
+            {
+                $tablename      = $wpdb->prefix.'tazapay_user';
+                $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $selleremail[0] ."' AND environment = '". $this->environment ."'");
+                $account_id     = $seller_results[0]->account_id;
 
-            if( $this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'dokan' && empty($account_id) ) {
-                unset($available_gateways['tz_tazapay']);
+                if( $this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'dokan' && empty($account_id) ) {
+                    unset($available_gateways['tz_tazapay']);
+                }
             }
         }
 
