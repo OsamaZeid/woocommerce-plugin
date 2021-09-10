@@ -97,7 +97,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 'title'       => __('Transaction Description', 'wc-tp-payment-gateway' ),
                 'type'        => 'textarea',
                 'description' => __('A short synopsis of the type of goods/service', 'wc-tp-payment-gateway' ),
-                'default'     => 'Pay with your TazaPay via our super-cool payment gateway.',
+                'default'     => 'Pay securely with buyer protection',
             ),            
             'sandboxmode' => array(
                 'title'       => __('Sandbox mode', 'wc-tp-payment-gateway' ),
