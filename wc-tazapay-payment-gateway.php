@@ -101,7 +101,7 @@ function tazapay_init_gateway_class() {
 
     $woocommerce_tz_tazapay_settings    = get_option( 'woocommerce_tz_tazapay_settings' );
     $tazapay_multi_seller_plugin        = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
-    $tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
+    $tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
 
     if($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'dokan'){
         require 'includes/dokan-add-new-menu.php';
