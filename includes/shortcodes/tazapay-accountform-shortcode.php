@@ -231,7 +231,7 @@ $environment        = $seller_results[0]->environment;
 
 $countryName        = WC()->countries->countries[$country_name];
 
-if ( $tazapay_seller_type != 'multiseller' && $tazapay_multi_seller_plugin == 'dokan' ) {
+if ( is_admin() ) {
     echo '<h2>'.__('TazaPay Account Information','wc-tp-payment-gateway'). '</h2><hr>';
 }
 ?>

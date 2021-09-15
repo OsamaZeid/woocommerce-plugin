@@ -277,7 +277,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
      **************************************************************************/
     function process_bulk_action() {
         global $wpdb;
-        $table = $wpdb->prefix.'users';
+        $table = $wpdb->prefix.'tazapay_user';
 
         $user_id = isset($_GET['user']);
 
@@ -336,7 +336,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * Optional. You can handle your bulk actions however you see fit. In this
          * case, we'll handle them within our package just to keep things clean.
          */
-        $this->process_bulk_action();        
+        //$this->process_bulk_action();        
         
         /**
          * Instead of querying a database, we're going to fetch the example data
@@ -425,9 +425,15 @@ class TazaPay_User_List_Table extends WP_List_Table {
  * menu item to the bottom of the admin menus.
  */
 function tt_add_menu_items(){
-    add_submenu_page( 'woocommerce', __('TazaPay Users', 'wc-tp-payment-gateway' ), __('TazaPay Users', 'wc-tp-payment-gateway' ), 'manage_options', 'tazapay-user', 'tazapay_render_list_page' );
-    add_submenu_page( '', '', '', 'manage_options', 'tazapay-user-edit', 'tazapay_render_edit_page' );
-    add_submenu_page( '', '', '', 'manage_options', 'tazapay-signup-form', 'tazapay_signup_form' );
+
+    $woocommerce_tz_tazapay_settings = get_option( 'woocommerce_tz_tazapay_settings' );
+    $tazapay_payment_method          = $woocommerce_tz_tazapay_settings['enabled'];
+    
+    if( $tazapay_payment_method == 'yes' ){
+        add_submenu_page( 'woocommerce', __('TazaPay Users', 'wc-tp-payment-gateway' ), __('TazaPay Users', 'wc-tp-payment-gateway' ), 'manage_options', 'tazapay-user', 'tazapay_render_list_page' );
+        add_submenu_page( '', '', '', 'manage_options', 'tazapay-user-edit', 'tazapay_render_edit_page' );
+        add_submenu_page( '', '', '', 'manage_options', 'tazapay-signup-form', 'tazapay_signup_form' );
+    }
 } 
 add_action('admin_menu', 'tt_add_menu_items');
 
