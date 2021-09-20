@@ -58,7 +58,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         add_action( 'woocommerce_view_order', array( $this, 'tazapay_view_order_and_thankyou_page' ), 20 );
         add_action( 'woocommerce_thankyou', array( $this, 'tazapay_view_order_and_thankyou_page' ), 20 );
 
-        //add_filter( 'woocommerce_gateway_icon', array( $this, 'tazapay_woocommerce_icons'), 10, 2 );
+        add_filter( 'woocommerce_gateway_icon', array( $this, 'tazapay_woocommerce_icons'), 10, 2 );
         add_filter( 'woocommerce_available_payment_gateways', array( $this, 'tazapay_woocommerce_available_payment_gateways' ) );
         add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'tazapay_order_meta_general' ) );
 
@@ -477,15 +477,16 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 $this->description  = trim( $this->description );
             }
             
-            $tazapay_logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
-            $payment_methods  = TAZAPAY_PUBLIC_ASSETS_DIR . "images/payment_methods.png";
+            //$tazapay_logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
             ?>
-            <div class="power-method-logos">
-                <div class="left-text"><p><?php echo __('Powered by', 'wc-tp-payment-gateway'); ?></p></div>         
-                <div class="right-logo"><img src="<?php echo $tazapay_logo_url; ?>" alt="tazapay" /></div>
-            </div>
+            <!--<div class="power-method-logos">
+                <div class="left-text"><p><?php //echo __('Powered by', 'wc-tp-payment-gateway'); ?></p></div>         
+                <div class="right-logo"><img src="<?php //echo $tazapay_logo_url; ?>" alt="tazapay" /></div>
+            </div>-->  
+
             <div class="payment-method-logos">
             <?php
+            $payment_methods  = TAZAPAY_PUBLIC_ASSETS_DIR . "images/payment_methods.png";
             echo wpautop( wp_kses_post( $this->description ) );
             echo '<img src=' .$payment_methods. ' alt="tazapay" class="tazapay-payment-method"/>';
             ?>
@@ -1086,7 +1087,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
      if ( $id === 'tz_tazapay' ) {
 
         $logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
-        return $icon  = '<img src=' .$logo_url. ' alt="tazapay" />';
+        return $icon  = '<span><img src=' .$logo_url. ' alt="tazapay" /></span>';
 
      } else {
         return $icon;

@@ -26,7 +26,7 @@
 .woocommerce-checkout-payment .wc_payment_method label {
     margin: 0;
 }
-.payment_method_tz_tazapay label[for="payment_method_tz_tazapay"] {
+/*.payment_method_tz_tazapay label[for="payment_method_tz_tazapay"] {
     background: rgba(21, 107, 138, 0.9);
     border: 1px solid #156b8a;
     color: #ffffff;
@@ -39,14 +39,59 @@
     border-radius: 5px;
     width: 100%;
 }
-
 .payment_method_tz_tazapay input:checked+label:before {
     color: #fff !important;
-}
+}*/
 
 .tazapay_form.dokan-form-horizontal input {
     width: 100%;
 }
 .tazapay_form.dokan-form-horizontal input[type="submit"] {
     width: auto;
+}
+
+.payment_method_tz_tazapay label {
+    position: relative;
+ }
+
+
+ @media (min-width:768px) {
+    .payment_method_tz_tazapay label span {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+ }
+
+ @media (min-width:768px) and (max-width:1024px) {
+    .payment_method_tz_tazapay label span {
+        right: 10px;
+    }
+    .payment_method_tz_tazapay label img {
+        max-width: 60px;
+    }
+    .payment_method_tz_tazapay .payment-method-logos p {
+        font-size: 16px;
+    }
+    #payment .place-order .button {
+        font-size: 18px !important;
+    }
+ }
+
+@media (max-width:767px) {
+    .payment_method_tz_tazapay label span {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    .payment_method_tz_tazapay label img {
+        max-width: 80px;
+    }
+}
+@media (max-width:320px) {
+    .payment_method_tz_tazapay label img {
+        max-width: 45px;
+    }
 }
