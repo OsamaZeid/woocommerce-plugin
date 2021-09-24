@@ -51,6 +51,7 @@
 }
 
 .payment_method_tz_tazapay label {
+    display: block !important;
     position: relative;
  }
 
