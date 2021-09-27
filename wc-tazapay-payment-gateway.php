@@ -107,9 +107,10 @@ function tazapay_init_gateway_class() {
         require 'includes/dokan-add-new-menu.php';
     }
     if($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'wc-vendors'){
-        //require 'wc-vendors/dashboard/navigation.php';
         require 'includes/wcvendors-add-new-menu.php';
     }
-
+    if($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'wcfm-marketplace'){
+        require 'includes/wcfm-add-new-menu.php';
+    }
     load_plugin_textdomain( 'wc-tp-payment-gateway', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 }

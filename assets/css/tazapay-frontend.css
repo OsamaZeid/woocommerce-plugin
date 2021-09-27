@@ -22,7 +22,6 @@
     color: #26536B;
     font-size: 17px;
 }
-
 .woocommerce-checkout-payment .wc_payment_method label {
     margin: 0;
 }
@@ -42,44 +41,65 @@
 .payment_method_tz_tazapay input:checked+label:before {
     color: #fff !important;
 }*/
-
 .tazapay_form.dokan-form-horizontal input {
     width: 100%;
 }
 .tazapay_form.dokan-form-horizontal input[type="submit"] {
     width: auto;
 }
-
 .payment_method_tz_tazapay label {
     display: block !important;
     position: relative;
- }
-
-
- @media (min-width:768px) {
-    .payment_method_tz_tazapay label span {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-    }
- }
-
- @media (min-width:768px) and (max-width:1024px) {
-    .payment_method_tz_tazapay label span {
-        right: 10px;
-    }
-    .payment_method_tz_tazapay label img {
-        max-width: 60px;
-    }
-    .payment_method_tz_tazapay .payment-method-logos p {
-        font-size: 16px;
-    }
-    #payment .place-order .button {
-        font-size: 18px !important;
-    }
- }
-
+}
+#wcfm_service_listing_expander .container {
+    width: 100%;
+    display: block;
+}
+#wcfm_service_listing_expander h2 {
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+#wcfm_service_listing_expander select{
+    width: 245px;
+    padding: 9px 5px;
+}
+#wcfm_service_listing_expander .dokan-form-group {
+    margin-bottom: 10px;
+}
+#wcfm_service_listing_expander input {
+    width: 245px;
+}
+#wcfm_service_listing_expander input[type="submit"] {
+    width: auto;
+}
+#wcfm_service_listing_expander label.error {
+    color: red;
+    display: block;
+    width: 100%;
+}
+@media (min-width:768px) {
+.payment_method_tz_tazapay label span {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+}
+@media (min-width:768px) and (max-width:1024px) {
+.payment_method_tz_tazapay label span {
+    right: 10px;
+}
+.payment_method_tz_tazapay label img {
+    max-width: 60px;
+}
+.payment_method_tz_tazapay .payment-method-logos p {
+    font-size: 16px;
+}
+#payment .place-order .button {
+    font-size: 18px !important;
+}
+}
 @media (max-width:767px) {
     .payment_method_tz_tazapay label span {
         position: absolute;

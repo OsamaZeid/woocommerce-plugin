@@ -135,7 +135,7 @@ if(isset($_POST['submit'])){
         }
 } 
 
-echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2><hr>';
+echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2>';
 
 ?>
 <form method="post" name="accountform" action="" class="tazapay_form dokan-form-horizontal">

@@ -1,0 +1,160 @@
+<?php
+// add_filter('wcfm_menus','ws_get_wcfm_menus', 30, 1);
+
+// function ws_get_wcfm_menus($wcfm_menus) {
+// 	$wcfm_menus['tazapay-information'] = array(
+// 	'label' => __( 'Tazapay Information', 'wc-tp-payment-gateway'),
+// 	'url' => get_wcfm_storepep_url(),
+// 	'icon' => 'cubes'
+// 	);
+// 	return $wcfm_menus;
+// }
+// function get_wcfm_storepep_url() {
+// 	global $WCFM;
+// 	$wcfm_page = get_wcfm_page();
+// 	$get_wcfm_settings_url = wcfm_get_endpoint_url( 'tazapay-information', '', $wcfm_page );
+// 	return $get_wcfm_settings_url;
+// }
+
+// // // ADD storepep VIEW
+// add_action( 'before_wcfm_load_views', function($end_point) { // wcfm_load_views
+// 	switch( $end_point ) {
+// 	case 'tazapay-information':
+// 	require_once dirname(__FILE__) . '/includes/tazapay-information.php';
+// 	break;
+// 	}
+// });
+
+// add_filter( 'wcfm_query_vars', function( $fields ) {
+// 	$wcfm_modified_endpoints = (array) get_option( 'wcfm_endpoints' );
+// 	$fields['tazapay-information'] = ! empty( $wcfm_modified_endpoints['tazapay-information'] ) ? $wcfm_modified_endpoints['tazapay-information'] : 'tazapay-information';
+// 	return $fields;
+// });
+
+// add_filter( 'wcfm_endpoints_slug', function( $fields ) {
+// 	$fields['tazapay-information'] = 'tazapay-information';
+// 	return $fields;
+// });
+
+// add_filter( 'wcfm_endpoint_tazapay-information_title', function( $title ) {
+// 	$title = __( 'Tazapay Information', 'wc-frontend-manager' );
+// 	return $title;
+// });
+
+// add_action( 'init', function() {
+// global $WCFM_Query;
+
+// // Intialize WCFM End points
+// $WCFM_Query->init_query_vars();
+// $WCFM_Query->add_endpoints();
+
+// if( !get_option( 'wcfm_updated_end_point_tazapay-information' ) ) {
+// 	// Flush rules after endpoint update
+// 	flush_rewrite_rules();
+// 	update_option( 'wcfm_updated_end_point_tazapay-information', 1 );
+// 	}
+// } );
+
+/**
+ * WCFM - Custom Menus Query Var
+ */
+function wcfmcsm_query_vars( $query_vars ) {
+	$wcfm_modified_endpoints = (array) get_option( 'wcfm_endpoints' );
+
+	$query_custom_menus_vars = array(
+		'tazapay-information' => ! empty( $wcfm_modified_endpoints['tazapay-information'] ) ? $wcfm_modified_endpoints['tazapay-information'] : 'tazapayinformation',
+	);
+	
+	$query_vars = array_merge( $query_vars, $query_custom_menus_vars );
+	
+	return $query_vars;
+}
+add_filter( 'wcfm_query_vars', 'wcfmcsm_query_vars', 50 );
+
+/**
+ * WCFM - Custom Menus End Point Title
+ */
+function wcfmcsm_endpoint_title( $title, $endpoint ) {
+	global $wp;
+	switch ( $endpoint ) {
+		case 'tazapay-information' :
+			$title = __( 'Tazapay Information', 'wcfm-custom-menus' );
+		break;
+	}
+	
+	return $title;
+}
+add_filter( 'wcfm_endpoint_title', 'wcfmcsm_endpoint_title', 50, 2 );
+
+/**
+ * WCFM - Custom Menus Endpoint Intialize
+ */
+function wcfmcsm_init() {
+	global $WCFM_Query;
+
+	// Intialize WCFM End points
+	$WCFM_Query->init_query_vars();
+	$WCFM_Query->add_endpoints();
+	
+	if( !get_option( 'wcfm_updated_end_point_cms' ) ) {
+		// Flush rules after endpoint update
+		flush_rewrite_rules();
+		update_option( 'wcfm_updated_end_point_cms', 1 );
+	}
+}
+add_action( 'init', 'wcfmcsm_init', 50 );
+
+/**
+ * WCFM - Custom Menus Endpoiint Edit
+ */
+function wcfm_custom_menus_endpoints_slug( $endpoints ) {
+	
+	$custom_menus_endpoints = array( 'wcfm-tazapay-information' => 'tazapayinformation' );
+	
+	$endpoints = array_merge( $endpoints, $custom_menus_endpoints );
+	
+	return $endpoints;
+}
+add_filter( 'wcfm_endpoints_slug', 'wcfm_custom_menus_endpoints_slug' );
+
+if(!function_exists('get_wcfm_custom_menus_url')) {
+	function get_wcfm_custom_menus_url( $endpoint ) {
+		global $WCFM;
+		$wcfm_page = get_wcfm_page();
+		$wcfm_custom_menus_url = wcfm_get_endpoint_url( $endpoint, '', $wcfm_page );
+		return $wcfm_custom_menus_url;
+	}
+}
+
+/**
+ * WCFM - Custom Menus
+ */
+function wcfmcsm_wcfm_menus( $menus ) {
+	global $WCFM;
+
+	$menus['tazapay-information'] = array(
+	'label' => __( 'Tazapay Information', 'wc-tp-payment-gateway'),
+	'url' => get_wcfm_custom_menus_url('tazapayinformation'),
+	'icon' => 'cubes'
+	);
+	
+		
+	return $menus;
+}
+add_filter( 'wcfm_menus', 'wcfmcsm_wcfm_menus', 20 );
+
+/**
+ *  WCFM - Custom Menus Views
+ */
+function wcfm_csm_load_views( $end_point ) {
+	global $WCFM, $WCFMu;
+	$plugin_path = trailingslashit( dirname( __FILE__  ) );
+	
+	switch( $end_point ) {		
+		case 'tazapay-information':
+			require_once( $plugin_path . 'tazapay-information.php' );
+		break;
+	}
+}
+add_action( 'wcfm_load_views', 'wcfm_csm_load_views', 50 );
+add_action( 'before_wcfm_load_views', 'wcfm_csm_load_views', 50 );

@@ -154,7 +154,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 'options'     => array(
                     'dokan'            => __('Dokan', 'wc-tp-payment-gateway' ),
                     'wc-vendors'       => __('WC Vendors', 'wc-tp-payment-gateway' ),
-                    //'wcfm-marketplace' => __('WCFM Marketplace', 'wc-tp-payment-gateway' )                    
+                    'wcfm-marketplace' => __('WCFM Marketplace', 'wc-tp-payment-gateway' )                    
                 ),
                 'description' => __('Multi Seller Marketplace Plugin', 'wc-tp-payment-gateway' ),
                 'class'     => 'tazapay-multiseller'
@@ -824,6 +824,19 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 }
             }
 
+            if( $sellercount == 1 && $this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'wcfm-marketplace' ){
+
+                $tablename      = $wpdb->prefix.'tazapay_user';
+                $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $selleremail[0] ."' AND environment = '". $this->environment ."'");
+                $seller_id     = $seller_results[0]->account_id;
+
+                if( !empty($seller_id) ) {
+                    $seller_id     = $seller_results[0]->account_id;
+                }else{
+                    $seller_id = $this->seller_id;
+                }
+            }
+
             $argsEscrow = array(
                 "txn_type"              => $this->txn_type_escrow,
                 "release_mechanism"     => $this->release_mechanism,
@@ -1087,7 +1100,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
      if ( $id === 'tz_tazapay' ) {
 
         $logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
-        return $icon  = '<span><img src=' .$logo_url. ' alt="tazapay" /></span>';
+        return $icon  = '<img src=' .$logo_url. ' alt="tazapay" />';
 
      } else {
         return $icon;
@@ -1151,6 +1164,10 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 }
 
                 if( $this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'wc-vendors' && empty($account_id) ) {
+                    unset($available_gateways['tz_tazapay']);
+                }
+
+                if( $this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'wcfm-marketplace' && empty($account_id) ) {
                     unset($available_gateways['tz_tazapay']);
                 }
             }
