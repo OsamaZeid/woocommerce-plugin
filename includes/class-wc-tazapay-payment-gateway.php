@@ -1100,7 +1100,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
      if ( $id === 'tz_tazapay' ) {
 
         $logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
-        return $icon  = '<img src=' .$logo_url. ' alt="tazapay" />';
+        return $icon  = '<span><img src=' .$logo_url. ' alt="tazapay" /></span>';
 
      } else {
         return $icon;
