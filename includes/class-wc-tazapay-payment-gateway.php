@@ -721,7 +721,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             $api_endpoint = "/v1/user";
             $api_url      = $this->base_api_url.'/v1/user';
 
-            $result   = $this->request_apicall( $api_url, $api_endpoint, $args, $order_id );
+            $result       = $this->request_apicall( $api_url, $api_endpoint, $args, $order_id );
 
             if ( $result->status == 'error' ) {
 
@@ -772,7 +772,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         }
 
         if (!empty($account_id )) {
-            $order->add_order_note( "Tazapay Acccount UUID: ".$account_id."", true );
+            //$order->add_order_note( "Tazapay Acccount UUID: ".$account_id."", true );
 
             foreach ( WC()->cart->get_cart() as $cart_item ){
                 $item_name = $cart_item['data']->get_title();
@@ -893,7 +893,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
                 update_post_meta( $order_id, 'txn_no', $result_escrow->data->txn_no );
 
-                $order->add_order_note( $result_escrow->message, true );
+                //$order->add_order_note( $result_escrow->message, true );
 
                 $argsPayment = array(
                     "txn_no"         => $result_escrow->data->txn_no,
@@ -934,11 +934,11 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
                     $redirect_url = $result_payment->data->redirect_url;                            
                     
-                    $order->update_status( 'wc-on-hold', __( 'Awaiting offline payment', 'wc-tp-payment-gateway' ) );                  
+                    $order->update_status( 'wc-on-hold', __( 'Awaiting offline payment', 'wc-tp-payment-gateway' ) );         
                     
                     $order->reduce_order_stock();
                     
-                    $order->add_order_note( $result_payment->message, true );
+                    //$order->add_order_note( $result_payment->message, true );
 
                     // Empty cart
                     $woocommerce->cart->empty_cart();
@@ -1019,21 +1019,21 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             $account_id     = $user_results[0]->account_id;
 
             ?>
-            <h2><?php echo __('Tazapay Information', 'wc-tp-payment-gateway'); ?></h2>
-            <p><?php echo __('Pay With Escrow', 'wc-tp-payment-gateway'); ?></p>
+            <h2><?php echo __('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
+            <p><?php echo __('Pay Now, Release Later powered by Tazapay', 'wc-tp-payment-gateway'); ?></p>
             <table class="woocommerce-table shop_table gift_info">
                 <tfoot>
-                    <tr>
-                        <th scope="row"><?php echo __('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></th>
-                        <td><?php echo $account_id; ?></td>
-                    </tr>
+                   <!--  <tr>
+                        <th scope="row"><?php //echo __('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></th>
+                        <td><?php //echo $account_id; ?></td>
+                    </tr> -->
                     <tr>
                         <th scope="row"><?php echo __('Tazapay Payer E-Mail', 'wc-tp-payment-gateway'); ?></th>
                         <td><?php echo $user_email; ?></td>
                     </tr>
                     <?php if($txn_no){ ?>
                     <tr>
-                        <th scope="row"><?php echo __('Escrow txn_no', 'wc-tp-payment-gateway'); ?></th>
+                        <th scope="row"><?php echo __('Transaction no', 'wc-tp-payment-gateway'); ?></th>
                         <td><?php echo $txn_no; ?></td>
                     </tr>
                     <?php } ?>
@@ -1062,11 +1062,13 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                                 $order->update_status('processing');
 
                                 if( $getEscrowstate->data->state == 'Payment_Received' ){
-                                    echo $getEscrowstate->data->state;                                
+                                    //echo $getEscrowstate->data->state;
+                                    echo __('Completed', 'wc-tp-payment-gateway');                               
                                 }
 
                                 if( $getEscrowstate->data->sub_state == 'Payment_Done' ){
-                                    echo $getEscrowstate->data->sub_state;                                
+                                    //echo $getEscrowstate->data->sub_state;
+                                    echo __('Completed', 'wc-tp-payment-gateway');                             
                                 }
 
                             }else{
@@ -1186,11 +1188,11 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         if(isset($account_id) && !empty($account_id)){
         ?>
         <br class="clear" />
-        <h3><?php echo __( 'TazaPay Information', 'wc-tp-payment-gateway' ); ?></h3>
+        <h3><?php echo __( 'Transaction Details', 'wc-tp-payment-gateway' ); ?></h3>
 
         <div class="address">
             <p><strong><?php echo __( 'TazaPay Account UUID:', 'wc-tp-payment-gateway' ); ?></strong> <?php echo $account_id ?></p>
-            <p><strong><?php echo __( 'Txn no:', 'wc-tp-payment-gateway' ); ?></strong> <?php echo $txn_no ?></p>
+            <p><strong><?php echo __( 'Transaction no:', 'wc-tp-payment-gateway' ); ?></strong> <?php echo $txn_no ?></p>
             <?php
             $getEscrowstate = $this->request_api_order_status($txn_no);
 
