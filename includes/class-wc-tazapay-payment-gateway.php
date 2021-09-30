@@ -990,7 +990,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             global $wpdb;                
             $tablename      = $wpdb->prefix.'tazapay_user';
             $user_results   = $wpdb->get_results("SELECT account_id FROM $tablename WHERE email = '". $user_email ."' AND environment = '". $this->environment ."'");
-            $account_id     = $user_results[0]->account_id;
+            $account_id     = !empty($user_results[0]->account_id) ? $user_results[0]->account_id : '';
 
             ?>
             <h2><?php echo __('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
@@ -1028,7 +1028,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                             </form>    
                             <?php
 
-                            if( $getEscrowstate->status == 'success' && ( $getEscrowstate->data->state == 'Payment_Received' || $getEscrowstate->data->sub_state == 'Payment_Done' ) )
+                            if( isset($getEscrowstate->status) && $getEscrowstate->status == 'success' && ( $getEscrowstate->data->state == 'Payment_Received' || $getEscrowstate->data->sub_state == 'Payment_Done' ) )
                             {
                                 /*
                                 * Order status change on-hold to processing
