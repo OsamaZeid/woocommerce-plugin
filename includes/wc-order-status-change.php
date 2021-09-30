@@ -22,7 +22,7 @@ function tazapay_request_api_order_status($txn_no){
   $apiKey     = $woocommerce_tz_tazapay_settings['sandboxmode'] ? $woocommerce_tz_tazapay_settings['sandbox_api_key'] : $woocommerce_tz_tazapay_settings['live_api_key'];
   $apiSecret  = $woocommerce_tz_tazapay_settings['sandboxmode'] ? $woocommerce_tz_tazapay_settings['sandbox_api_secret_key'] : $woocommerce_tz_tazapay_settings['live_api_secret_key'];
 
-  if($woocommerce_tz_tazapay_settings['sandboxmode'] == 'yes'){
+  if($woocommerce_tz_tazapay_settings['sandboxmode'] == 'sandbox'){
     $api_url = 'https://api-sandbox.tazapay.com';
   }else{
 	$api_url = 'https://api.tazapay.com';

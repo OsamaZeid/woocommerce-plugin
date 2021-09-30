@@ -69,25 +69,25 @@ jQuery(document).ready(function($) {
     $('.tazapay-multiseller').closest("tr").show();
   }
 
-  // if($('#woocommerce_tz_tazapay_tazapay_seller_type').val() == 'singleseller'){
-  //   $('.tazapay-multiseller').closest("tr").hide();
-  //   $('.tazapay-singleseller').closest("tr").show();
-  // }
-  // if($('#woocommerce_tz_tazapay_tazapay_seller_type').val() == 'multiseller'){
-  //   $('.tazapay-singleseller').closest("tr").hide();
-  //   $('.tazapay-multiseller').closest("tr").show();
-  // }
+  if($('#woocommerce_tz_tazapay_sandboxmode').val() == 'sandbox'){
+    $('.tazapay-production').closest("tr").hide();
+  }
+  if($('#woocommerce_tz_tazapay_sandboxmode').val() == 'production'){
+    $('.tazapay-sandbox').closest("tr").hide();
+  }
 
-  // $('#woocommerce_tz_tazapay_tazapay_seller_type').change(function () {
-  //   if(this.value == 'singleseller'){
-  //     $('.tazapay-multiseller').closest("tr").hide();
-  //     $('.tazapay-singleseller').closest("tr").show();
-  //   }
-  //   if(this.value == 'multiseller'){
-  //     $('.tazapay-singleseller').closest("tr").hide();
-  //     $('.tazapay-multiseller').closest("tr").show();
-  //   }
-  // });
+  $('#woocommerce_tz_tazapay_sandboxmode').change(function () {
+    
+    if(this.value == 'sandbox'){
+      $('.tazapay-sandbox').closest("tr").show();
+      $('.tazapay-production').closest("tr").hide();
+    }
+    if(this.value == 'production'){
+      $('.tazapay-sandbox').closest("tr").hide();
+      $('.tazapay-production').closest("tr").show();
+    }
+
+  });
 
   $('#woocommerce_tz_tazapay_tazapay_seller_type').change(function () {
     
@@ -100,4 +100,5 @@ jQuery(document).ready(function($) {
 
   });
 
-});  
+});
+

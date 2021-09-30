@@ -37,11 +37,11 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         $this->fee_paid_by                  = $this->get_option( 'fee_paid_by' );
         $this->fee_percentage               = $this->get_option( 'fee_percentage' );
         $this->enabled                      = $this->get_option( 'enabled' );
-        $this->sandboxmode                  = 'yes' === $this->get_option( 'sandboxmode' );
+        $this->sandboxmode                  = 'sandbox' === $this->get_option( 'sandboxmode' );
         $this->live_api_key                 = $this->sandboxmode ? $this->get_option( 'sandbox_api_key' ) : $this->get_option( 'live_api_key' );
         $this->live_api_secret_key          = $this->sandboxmode ? $this->get_option( 'sandbox_api_secret_key' ) : $this->get_option( 'live_api_secret_key' );
 
-        if($this->sandboxmode == 'yes'){
+        if($this->sandboxmode == 'sandbox'){
             $this->base_api_url = 'https://api-sandbox.tazapay.com';
             $this->environment  = 'sandbox';
         }else{
@@ -62,7 +62,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         add_filter( 'woocommerce_available_payment_gateways', array( $this, 'tazapay_woocommerce_available_payment_gateways' ) );
         add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'tazapay_order_meta_general' ) );
 
-        add_action( 'wp_ajax_order_status_refresh', array( $this, 'tazapay_order_status_refresh' ) ); 
+        add_action( 'wp_ajax_order_status_refresh', array( $this, 'tazapay_order_status_refresh' ) );
     }
 
     /*
@@ -70,7 +70,8 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
     */
     public function init_form_fields(){
 
-        global $woocommerce;
+        global $woocommerce, $current_section;
+
         $countries_obj  = new WC_Countries();
         $countries      = $countries_obj->__get('countries');
         $text1          = __( 'Place the payment gateway in sandbox mode using sandbox API keys', 'wc-tp-payment-gateway' );
@@ -79,7 +80,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         $text4          = __( 'Get Seller ID', 'wc-tp-payment-gateway' );
         $text5          = __( 'Before you redirect to sign up form you should save configuration.', 'wc-tp-payment-gateway' );
 
-        $this->form_fields = array(
+        $this->form_fields = array(            
             'enabled' => array(
                 'title'       => __('Enable/Disable', 'wc-tp-payment-gateway' ),
                 'label'       => __('Enable TazaPay Gateway', 'wc-tp-payment-gateway' ),
@@ -100,31 +101,39 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 'default'     => 'Pay securely with buyer protection',
             ),            
             'sandboxmode' => array(
-                'title'       => __('Sandbox mode', 'wc-tp-payment-gateway' ),
-                'label'       => __('Enable Sandbox Mode', 'wc-tp-payment-gateway' ),
-                'type'        => 'checkbox',
+                'title'       => __('Select mode', 'wc-tp-payment-gateway' ),
+                'label'       => __('Select Mode', 'wc-tp-payment-gateway' ),
+                'type'        => 'select',
+                'options'     => array(
+                    'sandbox'     => __('Sandbox', 'wc-tp-payment-gateway' ),
+                    'production'  => __('Production', 'wc-tp-payment-gateway' )
+                ),
                 'description' => __( $text1.'<br><br><a href="https://share.hsforms.com/1RcEF-LvgQv-6fArLsYSRwA4qumh" class="button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">'.$text2.'</a><p>'.$text3.'</p>', 'wc-tp-payment-gateway' ),
                 'default'     => 'yes'
             ),
             'sandbox_api_key' => array(
                 'title'       => __('Sandbox API Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
-                'description' => __('TazaPay sandbox API Key', 'wc-tp-payment-gateway' )
+                'description' => __('TazaPay sandbox API Key', 'wc-tp-payment-gateway' ),
+                'class'       => 'tazapay-sandbox'
             ),
             'sandbox_api_secret_key' => array(
                 'title'       => __('Sandbox API Secret Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
-                'description' => __('TazaPay sandbox API Secret Key', 'wc-tp-payment-gateway' )
+                'description' => __('TazaPay sandbox API Secret Key', 'wc-tp-payment-gateway' ),
+                'class'       => 'tazapay-sandbox'
             ),
             'live_api_key' => array(
                 'title'       => __('Live API Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
-                'description' => __('TazaPay Live API Key', 'wc-tp-payment-gateway' )
+                'description' => __('TazaPay Live API Key', 'wc-tp-payment-gateway' ),
+                'class'       => 'tazapay-production'
             ),
             'live_api_secret_key' => array(
                 'title'       => __('Live API Secret Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
-                'description' => __('TazaPay Live API Secret Key', 'wc-tp-payment-gateway' )
+                'description' => __('TazaPay Live API Secret Key', 'wc-tp-payment-gateway' ),
+                'class'       => 'tazapay-production'
             ),
             'seller_email' => array(
                 'title'       => __('Email', 'wc-tp-payment-gateway' ),
@@ -469,42 +478,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
      * You will need it if you want your custom form
      */
     public function payment_fields() {
-
-        if ( $this->description ) {
-            // you can instructions for test mode.
-            if ( $this->sandboxmode ) {
-                //$this->description = 'Don\'t have TazaPay account yet ? <a href="javascript:void(0);" onclick="tazapaySignupnow()" class="tazapay-signupnow">Sign up now</a>';
-                $this->description  = trim( $this->description );
-            }
-            
-            //$tazapay_logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
-            ?>
-            <!--<div class="power-method-logos">
-                <div class="left-text"><p><?php //echo __('Powered by', 'wc-tp-payment-gateway'); ?></p></div>         
-                <div class="right-logo"><img src="<?php //echo $tazapay_logo_url; ?>" alt="tazapay" /></div>
-            </div>-->  
-
-            <div class="payment-method-logos">
-            <?php
-            $payment_methods  = TAZAPAY_PUBLIC_ASSETS_DIR . "images/payment_methods.png";
-            echo wpautop( wp_kses_post( $this->description ) );
-            echo '<img src=' .$payment_methods. ' alt="tazapay" class="tazapay-payment-method"/>';
-            ?>
-            </div>
-            <?php
-        }
-
-        /*echo '<fieldset id="wc-' . esc_attr( $this->id ) . '-email-form" class="wc-email-form wc-payment-form" style="background:transparent;">';    
-        do_action( 'woocommerce_payment_form_start', $this->id );
-        ?>
-        <div class="form-row form-row-wide">
-            <label><?php echo __('TazaPay E-mail', 'wc-tp-payment-gateway'); ?><span class="required">*</span></label>
-            <input id="email" type="text" name="tazapay_email" placeholder="Enter your TazaPay E-mail" autocomplete="off">
-        </div>
-        <div class="clear"></div>  
-        <?php      
-        do_action( 'woocommerce_payment_form_end', $this->id );    
-        echo '<div class="clear"></div></fieldset>';*/
+        
             
     }
 
@@ -1101,8 +1075,14 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
 
      if ( $id === 'tz_tazapay' ) {
 
-        $logo_url = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
-        return $icon  = '<span><img src=' .$logo_url. ' alt="tazapay" /></span>';
+        $logo_url         = TAZAPAY_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
+        $payment_methods  = TAZAPAY_PUBLIC_ASSETS_DIR . "images/payment_methods.svg";
+
+        $icon   = '<div class="tazapay-checkout-button"><div class="tazapay-payment-logo"><span><img src=' .$logo_url. ' alt="tazapay" /></span>';
+        $icon  .= wpautop( wp_kses_post( $this->description ) );
+        $icon  .= '</div><div class="tazapay-payment-method"><img src=' .$payment_methods. ' alt="tazapay" class="tazapay-payment-method"/></div></div>';
+
+        return $icon;
 
      } else {
         return $icon;

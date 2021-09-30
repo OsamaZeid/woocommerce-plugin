@@ -10,7 +10,7 @@ $sandboxmode                        = $woocommerce_tz_tazapay_settings['sandboxm
 $tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
 $tazapay_multi_seller_plugin        = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
 
-if($sandboxmode == 'yes'){
+if($sandboxmode == 'sandbox'){
     $api_url      = 'https://api-sandbox.tazapay.com';
     $environment  = 'sandbox';
 }else{
@@ -27,7 +27,7 @@ if ( is_user_logged_in() && $tazapay_seller_type == 'multiseller' && !is_admin()
 
 $tablename      = $wpdb->prefix.'tazapay_user';
 $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '". $user_email ."' AND environment = '". $environment ."'");
-$account_id     = $seller_results[0]->account_id;
+$account_id     = !empty($seller_results[0]->account_id) ? $seller_results[0]->account_id : '';
 
 if( empty($account_id) ){    
 
@@ -190,12 +190,12 @@ echo '<h2>'.__('Create TazaPay Account','wc-tp-payment-gateway'). '</h2>';
         <input type="text" placeholder="Phone Number" name="phone_number" id="phone_number">
     </div>
     </div>
-    <div class="dokan-form-group">
+    <!-- <div class="dokan-form-group">
     <label for="partnerscustomerid" class="dokan-w3 dokan-control-label"><b><?php echo __('Partners Customer ID','wc-tp-payment-gateway'); ?></b></label>
     <div class="dokan-w5">
     <input type="text" placeholder="Partners Customer ID" name="partners_customer_id" id="partners_customer_id">
     </div>
-    </div>
+    </div> -->
     <div class="dokan-form-group">
     <label for="country" class="dokan-w3 dokan-control-label"><b><?php echo __('Country','wc-tp-payment-gateway'); ?></b></label>
     <div class="dokan-w5">
@@ -279,10 +279,10 @@ if ( is_admin() ) {
     <th><?php echo __('Country:','wc-tp-payment-gateway'); ?></th>
     <td><?php echo $countryName; ?></td>
   </tr>
-  <tr>
-    <th><?php echo __('Partners Customer ID:','wc-tp-payment-gateway'); ?></th>
-    <td><?php echo $partners_customer; ?></td>
-  </tr>
+  <!-- <tr>
+    <th><?php //echo __('Partners Customer ID:','wc-tp-payment-gateway'); ?></th>
+    <td><?php //echo $partners_customer; ?></td>
+  </tr> -->
    <tr>
     <th><?php echo __('Environment:','wc-tp-payment-gateway'); ?></th>
     <td><?php echo $environment; ?></td>

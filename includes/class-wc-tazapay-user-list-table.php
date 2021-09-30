@@ -214,7 +214,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
             'first_name'        => __( 'First Name', 'wc-tp-payment-gateway' ),
             'last_name'         => __( 'Last Name', 'wc-tp-payment-gateway' ),
             'business_name'     => __( 'Bussiness Name', 'wc-tp-payment-gateway' ),
-            'partners_customer' => __( 'Partners Customer ID', 'wc-tp-payment-gateway' ),
+            //'partners_customer' => __( 'Partners Customer ID', 'wc-tp-payment-gateway' ),
             'contact_code'      => __( 'Contact Code', 'wc-tp-payment-gateway' ),
             'contact_number'    => __( 'Contact Number', 'wc-tp-payment-gateway' ),
             'country_name'      => __( 'Country', 'wc-tp-payment-gateway' ),            
