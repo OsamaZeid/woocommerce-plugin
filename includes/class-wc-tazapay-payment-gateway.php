@@ -1058,14 +1058,16 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
             <?php 
             
             $order_notes = $this->get_private_order_notes( $order_id );
-            foreach($order_notes as $note){
-                $note_id = $note['note_id'];
-                $note_date = $note['note_date'];
-                $note_author = $note['note_author'];
-                $note_content = $note['note_content'];
-                
-                // Outputting each note content for the order
-                echo '<p><strong>'.date('F j, Y h:i A', strtotime($note_date)).'</strong> '.$note_content.'</p>';
+            if(isset($order_notes) && count($order_notes) > 1) {
+                foreach($order_notes as $note){
+                    $note_id = $note['note_id'];
+                    $note_date = $note['note_date'];
+                    $note_author = $note['note_author'];
+                    $note_content = $note['note_content'];
+                    
+                    // Outputting each note content for the order
+                    echo '<p><strong>'.date('F j, Y h:i A', strtotime($note_date)).'</strong> '.$note_content.'</p>';
+                }
             }
         }    
     }
