@@ -39,7 +39,42 @@
 body.tazapay-popup header, body.tazapay-popup footer, body.tazapay-popup .woocommerce-breadcrumb{
   display: none;
 }
-#woocommerce_tz_tazapay_sandbox_api_secret_key, #woocommerce_tz_tazapay_sandbox_api_key, #woocommerce_tz_tazapay_live_api_key, #woocommerce_tz_tazapay_live_api_secret_key{
+#woocommerce_tz_tazapay_sandbox_api_secret_key, 
+#woocommerce_tz_tazapay_sandbox_api_key, 
+#woocommerce_tz_tazapay_live_api_key, 
+#woocommerce_tz_tazapay_live_api_secret_key{
 -webkit-text-security: disc;
 }
 .tazapayusers .row-actions{ font-size: 12px; }
+tr.tzstep {
+    width: 33.33%;
+    display: initial;
+}
+tr.tzstep th{
+  width: auto;
+  padding-right: 15px !important; 
+  position: relative;
+}
+tr.tzstep th:after {
+  content: "|";
+  display: inline-block;
+  vertical-align: middle;
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);  
+}
+tr.tzstep.tz-stepthree th:after {
+  display: none;
+}
+tr.tzstep.active label {
+    color: #2271b1;
+}
+tr.tz-steptwo th,
+tr.tz-stepthree th {
+  text-align: center;
+}
+tr.tz-stepthree ~ tr th, 
+tr.tz-stepthree ~ tr td {
+  display: inline-block;
+}

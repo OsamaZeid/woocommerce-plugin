@@ -70,7 +70,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
     */
     public function init_form_fields(){
 
-        global $woocommerce, $current_section;
+        global $woocommerce, $wpdb;
 
         $countries_obj  = new WC_Countries();
         $countries      = $countries_obj->__get('countries');
@@ -80,25 +80,43 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
         $text4          = __( 'Get Seller ID', 'wc-tp-payment-gateway' );
         $text5          = __( 'Before you redirect to sign up form you should save configuration.', 'wc-tp-payment-gateway' );
 
-        $this->form_fields = array(            
+        $this->form_fields = array(
+            'step_one' => array(
+                'title'       => __('General TazaPay Settings', 'wc-tp-payment-gateway' ),
+                'type'        => 'hidden',
+                'class'       => 'step_one'
+            ),
+            'step_two' => array(
+                'title'       => __('Get Seller ID', 'wc-tp-payment-gateway' ),
+                'type'        => 'hidden',
+                'class'       => 'step_two'
+            ),
+            'step_three' => array(
+                'title'       => __('Advance TazaPay Settings', 'wc-tp-payment-gateway' ),
+                'type'        => 'hidden',
+                'class'       => 'step_three'
+            ),          
             'enabled' => array(
                 'title'       => __('Enable/Disable', 'wc-tp-payment-gateway' ),
                 'label'       => __('Enable TazaPay Gateway', 'wc-tp-payment-gateway' ),
                 'type'        => 'checkbox',
                 'description' => __('Enable TazaPay payment method', 'wc-tp-payment-gateway' ),
-                'default'     => 'no'
+                'default'     => 'no',
+                'class'       => 'step_one_section'
             ),
             'title' => array(
                 'title'       => __('Title', 'wc-tp-payment-gateway' ),
                 'type'        => 'text',
                 'description' => __('Backend payment method title', 'wc-tp-payment-gateway' ),
                 'default'     => 'Pay Now, Release Later',
+                'class'       => 'step_one_section'
             ),
             'description' => array(
                 'title'       => __('Transaction Description', 'wc-tp-payment-gateway' ),
                 'type'        => 'textarea',
                 'description' => __('A short synopsis of the type of goods/service', 'wc-tp-payment-gateway' ),
                 'default'     => 'Pay securely with buyer protection',
+                'class'       => 'step_one_section'
             ),            
             'sandboxmode' => array(
                 'title'       => __('Select mode', 'wc-tp-payment-gateway' ),
@@ -109,43 +127,44 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                     'production'  => __('Production', 'wc-tp-payment-gateway' )
                 ),
                 'description' => __( $text1.'<br><br><a href="https://share.hsforms.com/1RcEF-LvgQv-6fArLsYSRwA4qumh" class="button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">'.$text2.'</a><p>'.$text3.'</p>', 'wc-tp-payment-gateway' ),
-                'default'     => 'yes'
+                'default'     => 'yes',
+                'class'       => 'step_one_section'
             ),
             'sandbox_api_key' => array(
                 'title'       => __('Sandbox API Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
                 'description' => __('TazaPay sandbox API Key', 'wc-tp-payment-gateway' ),
-                'class'       => 'tazapay-sandbox'
+                'class'       => 'step_one_section tazapay-sandbox',
             ),
             'sandbox_api_secret_key' => array(
                 'title'       => __('Sandbox API Secret Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
                 'description' => __('TazaPay sandbox API Secret Key', 'wc-tp-payment-gateway' ),
-                'class'       => 'tazapay-sandbox'
+                'class'       => 'step_one_section tazapay-sandbox'
             ),
             'live_api_key' => array(
                 'title'       => __('Live API Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
                 'description' => __('TazaPay Live API Key', 'wc-tp-payment-gateway' ),
-                'class'       => 'tazapay-production'
+                'class'       => 'step_one_section tazapay-production'
             ),
             'live_api_secret_key' => array(
                 'title'       => __('Live API Secret Key', 'wc-tp-payment-gateway' ),
                 'type'        => 'password',
                 'description' => __('TazaPay Live API Secret Key', 'wc-tp-payment-gateway' ),
-                'class'       => 'tazapay-production'
+                'class'       => 'step_one_section tazapay-production'
             ),
             'seller_email' => array(
                 'title'       => __('Email', 'wc-tp-payment-gateway' ),
                 'type'        => 'text',
                 'description' => __('Seller\'s Email', 'wc-tp-payment-gateway' ),
-                'class'     => 'tazapay-singleseller'
+                'class'       => 'step_one_section tazapay-singleseller'
             ),            
             'seller_id' => array(
                 'title'       => __('Seller ID', 'wc-tp-payment-gateway' ),
                 'type'        => 'text',
-                'description' => __('Tazapay account UUID <br><br><a href="?page=tazapay-signup-form" class="button-primary" target="_blank" title="Click Here">'.$text4.'</a><br>'.$text5, 'wc-tp-payment-gateway' ),
-                'class'     => 'tazapay-singleseller'
+                'description' => __('Tazapay account UUID <br><br><a href="?page=tazapay-signup-form" class="button-primary" target="_blank" title="Click Here">'.$text4.'</a><br><br>'.$text5, 'wc-tp-payment-gateway' ),
+                'class'     => 'step_two_section tazapay-singleseller'
             ),
             'tazapay_seller_type' => array(
                 'title'       => __('Seller Type', 'wc-tp-payment-gateway' ),
@@ -155,7 +174,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                     'multiseller'  => __('Multi Seller', 'wc-tp-payment-gateway' )
                 ),
                 'description' => __('Single seller or Multi Seller', 'wc-tp-payment-gateway' ),
-                'class'     => 'tazapay-seller-type'
+                'class'       => 'step_three_section tazapay-seller-type'
             ),
             'tazapay_multi_seller_plugin' => array(
                 'title'       => __('Multi Seller Marketplace Plugin', 'wc-tp-payment-gateway' ),
@@ -166,7 +185,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                     'wcfm-marketplace' => __('WCFM Marketplace', 'wc-tp-payment-gateway' )                    
                 ),
                 'description' => __('Multi Seller Marketplace Plugin', 'wc-tp-payment-gateway' ),
-                'class'     => 'tazapay-multiseller'
+                'class'       => 'step_three_section tazapay-multiseller'
             ),
             
             // 'seller_name' => array(
@@ -201,9 +220,10 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                 'type'        => 'select',
                 'options'     => array(
                     'service' => __('Service', 'wc-tp-payment-gateway' ),
-                    'goods' => __('Goods', 'wc-tp-payment-gateway' )
+                    'goods'   => __('Goods', 'wc-tp-payment-gateway' )
                 ),
-                'description' => __('Type of underlying trade', 'wc-tp-payment-gateway' )
+                'description' => __('Type of underlying trade', 'wc-tp-payment-gateway' ),
+                'class'       => 'step_three_section'
             ),
             'release_mechanism' => array(
                 'title'       => __('Release Mechanism', 'wc-tp-payment-gateway' ),
@@ -212,16 +232,18 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway {
                     'tazapay' => __('Tazapay', 'wc-tp-payment-gateway' ),
                     'marketplace' => __('Marketplace', 'wc-tp-payment-gateway' )
                 ),
-                'description' => __('Specify who control release verification', 'wc-tp-payment-gateway' )
+                'description' => __('Specify who control release verification', 'wc-tp-payment-gateway' ),
+                'class'       => 'step_three_section'
             ),
             'fee_paid_by' => array(
                 'title'       => __('Fee Paid By', 'wc-tp-payment-gateway' ),
                 'type'        => 'select',
                 'options'     => array(
-                    'seller' => __('Seller', 'wc-tp-payment-gateway' ),
-                    'buyer' => __('Buyer', 'wc-tp-payment-gateway' ),
+                    'seller'  => __('Seller', 'wc-tp-payment-gateway' ),
+                    'buyer'   => __('Buyer', 'wc-tp-payment-gateway' ),
                 ),
-                'description' => __('Tazapay account uuid. If empty; contracted value will get applied', 'wc-tp-payment-gateway' )
+                'description' => __('Tazapay account uuid. If empty; contracted value will get applied', 'wc-tp-payment-gateway' ),
+                'class'       => 'step_three_section'
             ),
             // 'fee_percentage' => array(
             //     'title'       => 'Fee Percentage',

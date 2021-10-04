@@ -62,18 +62,88 @@ jQuery(function() {
 
 
 jQuery(document).ready(function($) {
-  $('#woocommerce_tz_tazapay_title').attr('required', true);  
-  $('.tazapay-multiseller').closest("tr").hide();
 
-  if($('#woocommerce_tz_tazapay_tazapay_seller_type').val() == 'multiseller'){
-    $('.tazapay-multiseller').closest("tr").show();
-  }
+  $('.step_one').closest("tr").addClass("tzstep tz-stepone active");
+  $('.step_two').closest("tr").addClass("tzstep tz-steptwo");
+  $('.step_three').closest("tr").addClass("tzstep tz-stepthree");
+
+  var stepone   = $('.step_one').closest("tr");
+  var steptwo   = $('.step_two').closest("tr");
+  var stepthree = $('.step_three').closest("tr");
+
+  $('.step_one_section').closest("tr").show();
+  $('.step_two_section').closest("tr").hide();
+  $('.step_three_section').closest("tr").hide();
+
+  $(stepone).click(function() {
+    $('.step_one_section').closest("tr").show();
+    $('.step_two_section').closest("tr").hide();
+    $('.step_three_section').closest("tr").hide();
+
+    $('.step_one').closest("tr").addClass("active");
+    $('.step_two').closest("tr").removeClass("active");
+    $('.step_three').closest("tr").removeClass("active");
+
+    if($('#woocommerce_tz_tazapay_sandboxmode').val() == 'sandbox'){
+      $('.tazapay-production').closest("tr").hide();
+    }
+    if($('#woocommerce_tz_tazapay_sandboxmode').val() == 'production'){
+      $('.tazapay-sandbox').closest("tr").hide();
+    }
+
+  });
+  $(steptwo).click(function() {
+    $('.step_one_section').closest("tr").hide();
+    $('.step_two_section').closest("tr").show();
+    $('.step_three_section').closest("tr").hide();
+
+    $('.step_one').closest("tr").removeClass("active");
+    $('.step_two').closest("tr").addClass("active");
+    $('.step_three').closest("tr").removeClass("active");
+  });
+  $(stepthree).click(function() {
+    $('.step_one_section').closest("tr").hide();
+    $('.step_two_section').closest("tr").hide();
+    $('.step_three_section').closest("tr").show();
+
+    $('.step_one').closest("tr").removeClass("active");
+    $('.step_two').closest("tr").removeClass("active");
+    $('.step_three').closest("tr").addClass("active");
+
+    if($('#woocommerce_tz_tazapay_tazapay_seller_type').val() == 'singleseller'){
+      $('.tazapay-multiseller').closest("tr").hide();
+    }      
+    if($('#woocommerce_tz_tazapay_tazapay_seller_type').val() == 'multiseller'){
+      $('.tazapay-multiseller').closest("tr").show();
+    }
+
+  });
+
+  $('#woocommerce_tz_tazapay_title').attr('required', true); 
 
   if($('#woocommerce_tz_tazapay_sandboxmode').val() == 'sandbox'){
     $('.tazapay-production').closest("tr").hide();
   }
   if($('#woocommerce_tz_tazapay_sandboxmode').val() == 'production'){
     $('.tazapay-sandbox').closest("tr").hide();
+  }
+
+  if( $('#woocommerce_tz_tazapay_sandboxmode').val() == 'sandbox' && $("#woocommerce_tz_tazapay_sandbox_api_key").val() == "" && $("#woocommerce_tz_tazapay_sandbox_api_secret_key").val() == "" ){
+    $(".tz-steptwo").css({
+        "pointer-events": "none"
+    });
+    $(".tz-stepthree").css({
+        "pointer-events": "none"
+    });
+  }
+
+  if( $('#woocommerce_tz_tazapay_sandboxmode').val() == 'production' && $("#woocommerce_tz_tazapay_live_api_key").val() == "" && $("#woocommerce_tz_tazapay_live_api_secret_key").val() == "" ){
+    $(".tz-steptwo").css({
+        "pointer-events": "none"
+    });
+    $(".tz-stepthree").css({
+        "pointer-events": "none"
+    });
   }
 
   $('#woocommerce_tz_tazapay_sandboxmode').change(function () {
@@ -98,7 +168,6 @@ jQuery(document).ready(function($) {
       $('.tazapay-multiseller').closest("tr").show();
     }
 
-  });
+  });  
 
 });
-
