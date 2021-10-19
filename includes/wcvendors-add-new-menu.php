@@ -42,7 +42,7 @@ function tazapay_information_wcvendors() {
 		$tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
 		$tazapay_multi_seller_plugin        = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
 
-		if($sandboxmode == 'yes'){
+		if($sandboxmode == 'sandbox'){
 		    $api_url      = 'https://api-sandbox.tazapay.com';
 		    $environment  = 'sandbox';
 		}else{
