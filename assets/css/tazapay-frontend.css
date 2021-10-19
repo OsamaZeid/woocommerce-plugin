@@ -26,22 +26,10 @@
 .woocommerce-checkout-payment .wc_payment_method label {
     margin: 0;
 }
-/*.payment_method_tz_tazapay label[for="payment_method_tz_tazapay"] {
-    background: rgba(21, 107, 138, 0.9);
-    border: 1px solid #156b8a;
-    color: #ffffff;
-    cursor: pointer;
-    display: inline-block;
-    padding: 16px 23px !important;
-    font-size: 17px;
-    box-sizing: border-box;
-    vertical-align: middle;
-    border-radius: 5px;
-    width: 100%;
+.tazapay-account-information label.error {
+    color: red;
+    float: left;
 }
-.payment_method_tz_tazapay input:checked+label:before {
-    color: #fff !important;
-}*/
 .tazapay_form.dokan-form-horizontal input {
     width: 100%;
 }
