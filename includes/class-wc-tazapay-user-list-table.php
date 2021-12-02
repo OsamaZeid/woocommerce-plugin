@@ -1,6 +1,6 @@
 <?php
-if(!class_exists('WP_List_Table')){
-    require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
+if (!class_exists('WP_List_Table')) {
+    require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
 }
 
 /************************** CREATE A PACKAGE CLASS *****************************
@@ -16,8 +16,9 @@ if(!class_exists('WP_List_Table')){
  * 
  * Our theme for this list table is going to be movies.
  */
-class TazaPay_User_List_Table extends WP_List_Table {
-    
+class TazaPay_User_List_Table extends WP_List_Table
+{
+
     /** ************************************************************************
      * Normally we would be querying data from a database and manipulating that
      * for use in your list table. For this example, we're going to simplify it
@@ -29,20 +30,21 @@ class TazaPay_User_List_Table extends WP_List_Table {
      * 
      * @var array 
      **************************************************************************/
-    
+
     /** ************************************************************************
      * REQUIRED. Set up a constructor that references the parent constructor. We 
      * use the parent reference to set some default configs.
      ***************************************************************************/
-    function __construct(){
+    function __construct()
+    {
         global $status, $page;
-                
+
         //Set parent defaults
-        parent::__construct( array(
+        parent::__construct(array(
             'singular'  => 'tazapayuser',    //singular name of the listed records
             'plural'    => 'tazapayusers',   //plural name of the listed records
             'ajax'      => false             //does this table support ajax?
-        ) );        
+        ));
     }
 
 
@@ -75,10 +77,10 @@ class TazaPay_User_List_Table extends WP_List_Table {
         $data = array();
         $userArray = array();
 
-        $tablename      = $wpdb->prefix.'tazapay_user';
+        $tablename      = $wpdb->prefix . 'tazapay_user';
         $results = $wpdb->get_results("SELECT * FROM $tablename");
 
-        foreach($results as $result){
+        foreach ($results as $result) {
 
             $first_name         = $result->first_name;
             $last_name          = $result->last_name;
@@ -93,9 +95,9 @@ class TazaPay_User_List_Table extends WP_List_Table {
             $environment        = $result->environment;
             $account_id         = $result->account_id;
             $countryName        = WC()->countries->countries[$country_name];
-          
 
-            if($account_id){
+
+            if ($account_id) {
                 $data[] = array(
                     'id'                => $result->id,
                     'account_id'        => $account_id,
@@ -112,13 +114,14 @@ class TazaPay_User_List_Table extends WP_List_Table {
                     'partners_customer' => $partners_customer,
                     'environment'       => $environment,
                 );
-            }            
-        }            
+            }
+        }
         return $data;
     }
-    function column_default($item, $column_name){
+    function column_default($item, $column_name)
+    {
 
-        switch( $column_name ) {
+        switch ($column_name) {
             case 'id':
             case 'account_id':
             case 'user_type':
@@ -131,13 +134,13 @@ class TazaPay_User_List_Table extends WP_List_Table {
             case 'ind_bus_type':
             case 'created':
             case 'business_name':
-            case 'partners_customer':
+                //case 'partners_customer':
             case 'environment':
-                return $item[ $column_name ];
+                return $item[$column_name];
 
             default:
-                return print_r( $item, true ) ;
-        }        
+                return print_r($item, true);
+        }
     }
 
     /** ************************************************************************
@@ -156,19 +159,24 @@ class TazaPay_User_List_Table extends WP_List_Table {
      * @param array $item A singular item (one full row's worth of data)
      * @return string Text to be placed inside the column <td> (movie title only)
      **************************************************************************/
-    function column_title($item){
-        
+    function column_title($item)
+    {
+
         //Build row actions
         $actions = array(
-            'edit'      => sprintf('<a href="?page=%s&action=%s&user=%s">Edit</a>','tazapay-user-edit','edit',$item['id']),
+            'edit'      => sprintf('<a href="?page=%s&action=%s&user=%s">Edit</a>', 'tazapay-user-edit', 'edit', $item['id']),
             //'delete'    => sprintf('<a href="?page=%s&action=%s&user=%s">Delete</a>',$_REQUEST['page'],'delete',$item['id']),
         );
-        
+
         //Return the title contents
-        return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            /*$1%s*/ $item['id'],
-            /*$2%s*/ $item['id'],
-            /*$3%s*/ $this->row_actions($actions)
+        return sprintf(
+            '%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
+            /*$1%s*/
+            $item['id'],
+            /*$2%s*/
+            $item['id'],
+            /*$3%s*/
+            $this->row_actions($actions)
         );
     }
 
@@ -181,11 +189,14 @@ class TazaPay_User_List_Table extends WP_List_Table {
      * @param array $item A singular item (one full row's worth of data)
      * @return string Text to be placed inside the column <td> (movie title only)
      **************************************************************************/
-    function column_cb($item){
+    function column_cb($item)
+    {
         return sprintf(
             '<input type="checkbox" name="%1$s[]" value="%2$s" />',
-            /*$1%s*/ $this->_args['singular'],  //Let's simply repurpose the table's singular label ("movie")
-            /*$2%s*/ $item['ID']                //The value of the checkbox should be the record's id
+            /*$1%s*/
+            $this->_args['singular'],  //Let's simply repurpose the table's singular label ("movie")
+            /*$2%s*/
+            $item['ID']                //The value of the checkbox should be the record's id
         );
     }
 
@@ -202,24 +213,25 @@ class TazaPay_User_List_Table extends WP_List_Table {
      * @see WP_List_Table::::single_row_columns()
      * @return array An associative array containing column information: 'slugs'=>'Visible Titles'
      **************************************************************************/
-    function get_columns(){
+    function get_columns()
+    {
         $columns = array(
             //'cb'                => '<input type="checkbox" />', //Render a checkbox instead of text
-            'title'             => __( 'ID', 'wc-tp-payment-gateway' ),
+            'title'             => __('ID', 'wc-tp-payment-gateway'),
             //'id'                => __( 'ID', 'wc-tp-payment-gateway' ),
-            'account_id'        => __( 'TazaPay Account UUID', 'wc-tp-payment-gateway' ),
-            'user_type'         => __( 'User Type', 'wc-tp-payment-gateway' ),
-            'email'             => __( 'Email', 'wc-tp-payment-gateway' ),
-            'ind_bus_type'      => __( 'Entity Type', 'wc-tp-payment-gateway' ),
-            'first_name'        => __( 'First Name', 'wc-tp-payment-gateway' ),
-            'last_name'         => __( 'Last Name', 'wc-tp-payment-gateway' ),
-            'business_name'     => __( 'Bussiness Name', 'wc-tp-payment-gateway' ),
+            'account_id'        => __('Tazapay Account UUID', 'wc-tp-payment-gateway'),
+            'user_type'         => __('User Type', 'wc-tp-payment-gateway'),
+            'email'             => __('Email', 'wc-tp-payment-gateway'),
+            'ind_bus_type'      => __('Entity Type', 'wc-tp-payment-gateway'),
+            'first_name'        => __('First Name', 'wc-tp-payment-gateway'),
+            'last_name'         => __('Last Name', 'wc-tp-payment-gateway'),
+            'business_name'     => __('Bussiness Name', 'wc-tp-payment-gateway'),
             //'partners_customer' => __( 'Partners Customer ID', 'wc-tp-payment-gateway' ),
-            'contact_code'      => __( 'Contact Code', 'wc-tp-payment-gateway' ),
-            'contact_number'    => __( 'Contact Number', 'wc-tp-payment-gateway' ),
-            'country_name'      => __( 'Country', 'wc-tp-payment-gateway' ),            
-            'environment'       => __( 'Environment', 'wc-tp-payment-gateway' ),            
-            'created'           => __( 'Created', 'wc-tp-payment-gateway' ),
+            'contact_code'      => __('Contact Code', 'wc-tp-payment-gateway'),
+            'contact_number'    => __('Contact Number', 'wc-tp-payment-gateway'),
+            'country_name'      => __('Country', 'wc-tp-payment-gateway'),
+            'environment'       => __('Environment', 'wc-tp-payment-gateway'),
+            'created'           => __('Created', 'wc-tp-payment-gateway'),
         );
         return $columns;
     }
@@ -238,11 +250,12 @@ class TazaPay_User_List_Table extends WP_List_Table {
      * 
      * @return array An associative array containing all the columns that should be sortable: 'slugs'=>array('data_values',bool)
      **************************************************************************/
-    function get_sortable_columns() {
+    function get_sortable_columns()
+    {
         $sortable_columns = array(
-             'title'         => array('id',false),
-             'country_name'  => array('country_name',false),
-             'environment'   => array('environment',false)
+            'title'         => array('id', false),
+            'country_name'  => array('country_name', false),
+            'environment'   => array('environment', false)
         );
         return $sortable_columns;
     }
@@ -275,17 +288,18 @@ class TazaPay_User_List_Table extends WP_List_Table {
      * 
      * @see $this->prepare_items()
      **************************************************************************/
-    function process_bulk_action() {
+    function process_bulk_action()
+    {
         global $wpdb;
-        $table = $wpdb->prefix.'tazapay_user';
+        $table = $wpdb->prefix . 'tazapay_user';
 
         $user_id = isset($_GET['user']);
 
         //Detect when a bulk action is being triggered...
-        if( 'delete'===$this->current_action() ) {
-            $wpdb->delete($table, array('ID'=>$user_id));
-            $_GET['msg']="delete";
-        }                
+        if ('delete' === $this->current_action()) {
+            $wpdb->delete($table, array('ID' => $user_id));
+            $_GET['msg'] = "delete";
+        }
     }
 
     /** ************************************************************************
@@ -303,7 +317,8 @@ class TazaPay_User_List_Table extends WP_List_Table {
      * @uses $this->get_pagenum()
      * @uses $this->set_pagination_args()
      **************************************************************************/
-    function prepare_items() {
+    function prepare_items()
+    {
         global $wpdb; //This is used only if making any database queries
 
         $prefix = $wpdb->prefix;
@@ -311,8 +326,8 @@ class TazaPay_User_List_Table extends WP_List_Table {
         /**
          * First, lets decide how many records per page to show
          */
-        $per_page = 10;        
-        
+        $per_page = 10;
+
         /**
          * REQUIRED. Now we need to define our column headers. This includes a complete
          * array of columns to be displayed (slugs & titles), a list of columns
@@ -322,22 +337,22 @@ class TazaPay_User_List_Table extends WP_List_Table {
          */
         $columns = $this->get_columns();
         $hidden = array();
-        $sortable = $this->get_sortable_columns();        
-        
+        $sortable = $this->get_sortable_columns();
+
         /**
          * REQUIRED. Finally, we build an array to be used by the class for column 
          * headers. The $this->_column_headers property takes an array which contains
          * 3 other arrays. One for all columns, one for hidden columns, and one
          * for sortable columns.
          */
-        $this->_column_headers = array($columns, $hidden, $sortable);        
-        
+        $this->_column_headers = array($columns, $hidden, $sortable);
+
         /**
          * Optional. You can handle your bulk actions however you see fit. In this
          * case, we'll handle them within our package just to keep things clean.
          */
         //$this->process_bulk_action();        
-        
+
         /**
          * Instead of querying a database, we're going to fetch the example data
          * property we created for use in this plugin. This makes this example 
@@ -348,7 +363,7 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * be able to use your precisely-queried data immediately.
          */
 
-        $data = $this->table_data();           
+        $data = $this->table_data();
 
         /**
          * This checks for sorting input and sorts the data in our array accordingly.
@@ -358,14 +373,15 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * to a custom query. The returned data will be pre-sorted, and this array
          * sorting technique would be unnecessary.
          */
-        function usort_reorder($a,$b){
-          $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'id'; //If no sort, default to title
-          $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default to asc
-          $result = strnatcmp($a[$orderby], $b[$orderby]); //Determine sort order
-          return ($order==='asc') ? $result : -$result; //Send final sort direction to usort
+        function usort_reorder($a, $b)
+        {
+            $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'id'; //If no sort, default to title
+            $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default to asc
+            $result = strnatcmp($a[$orderby], $b[$orderby]); //Determine sort order
+            return ($order === 'asc') ? $result : -$result; //Send final sort direction to usort
         }
-        usort($data, 'usort_reorder');        
-        
+        usort($data, 'usort_reorder');
+
         /*****************************------------------------------------------------------
          * vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
          * ******************************************
@@ -378,43 +394,43 @@ class TazaPay_User_List_Table extends WP_List_Table {
          * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          * ---------------------------------------------------------------------
          **********************************************************************/
-                        
+
         /**
          * REQUIRED for pagination. Let's figure out what page the user is currently 
          * looking at. We'll need this later, so you should always include it in 
          * your own package classes.
          */
         $current_page = $this->get_pagenum();
-        
+
         /**
          * REQUIRED for pagination. Let's check how many items are in our data array. 
          * In real-world use, this would be the total number of items in your database, 
          * without filtering. We'll need this later, so you should always include it 
          * in your own package classes.
          */
-        $total_items = count($data);        
-        
+        $total_items = count($data);
+
         /**
          * The WP_List_Table class does not handle pagination for us, so we need
          * to ensure that the data is trimmed to only the current page. We can use
          * array_slice() to 
          */
-        $data = array_slice($data,(($current_page-1)*$per_page),$per_page);    
-        
+        $data = array_slice($data, (($current_page - 1) * $per_page), $per_page);
+
         /**
          * REQUIRED. Now we can add our *sorted* data to the items property, where 
          * it can be used by the rest of the class.
          */
-        $this->items = $data;        
-        
+        $this->items = $data;
+
         /**
          * REQUIRED. We also have to register our pagination options & calculations.
          */
-        $this->set_pagination_args( array(
+        $this->set_pagination_args(array(
             'total_items' => $total_items,                  //WE have to calculate the total number of items
             'per_page'    => $per_page,                     //WE have to determine how many items to show on a page
-            'total_pages' => ceil($total_items/$per_page)   //WE have to calculate the total number of pages
-        ) );
+            'total_pages' => ceil($total_items / $per_page)   //WE have to calculate the total number of pages
+        ));
     }
 }
 
@@ -424,17 +440,18 @@ class TazaPay_User_List_Table extends WP_List_Table {
  * Now we just need to define an admin page. For this example, we'll add a top-level
  * menu item to the bottom of the admin menus.
  */
-function tt_add_menu_items(){
+function tt_add_menu_items()
+{
 
-    $woocommerce_tz_tazapay_settings = get_option( 'woocommerce_tz_tazapay_settings' );
-    $tazapay_payment_method          = $woocommerce_tz_tazapay_settings['enabled'];
-    
-    if( $tazapay_payment_method == 'yes' ){
-        add_submenu_page( 'woocommerce', __('TazaPay Users', 'wc-tp-payment-gateway' ), __('TazaPay Users', 'wc-tp-payment-gateway' ), 'manage_options', 'tazapay-user', 'tazapay_render_list_page' );
-        add_submenu_page( '', '', '', 'manage_options', 'tazapay-user-edit', 'tazapay_render_edit_page' );
-        add_submenu_page( '', '', '', 'manage_options', 'tazapay-signup-form', 'tazapay_signup_form' );
+    $woocommerce_tz_tazapay_settings = get_option('woocommerce_tz_tazapay_settings');
+    $tazapay_payment_method          = !empty($woocommerce_tz_tazapay_settings['enabled']) ? $woocommerce_tz_tazapay_settings['enabled'] : '';
+
+    if ($tazapay_payment_method == 'yes') {
+        add_submenu_page('woocommerce', __('Tazapay Users', 'wc-tp-payment-gateway'), __('Tazapay Users', 'wc-tp-payment-gateway'), 'manage_options', 'tazapay-user', 'tazapay_render_list_page');
+        add_submenu_page('', '', '', 'manage_options', 'tazapay-user-edit', 'tazapay_render_edit_page');
+        add_submenu_page('', '', '', 'manage_options', 'tazapay-signup-form', 'tazapay_signup_form');
     }
-} 
+}
 add_action('admin_menu', 'tt_add_menu_items');
 
 // Form shortcode
@@ -451,25 +468,26 @@ function tazapay_signup_form($atts)
  * so we've instead called those methods explicitly. It keeps things flexible, and
  * it's the way the list tables are used in the WordPress core.
  */
-function tazapay_render_list_page(){
-    
+function tazapay_render_list_page()
+{
+
     //Create an instance of our package class...
     $tazapayListTable = new TazaPay_User_List_Table();
     //Fetch, prepare, sort, and filter our data...
     $tazapayListTable->prepare_items();
-    
-    ?>
-    <div class="wrap">        
-        <div id="icon-users" class="icon32"><br/></div>
-        <h2><?php echo __( 'TazaPay Users', 'wc-tp-payment-gateway' ); ?></h2>
+
+?>
+    <div class="wrap">
+        <div id="icon-users" class="icon32"><br /></div>
+        <h2><?php echo __('Tazapay Users', 'wc-tp-payment-gateway'); ?></h2>
         <div id="response-message">
-            <?php if(isset($_GET['msg'])){ ?>
-            <div class="notice notice-success">        
-            <?php if($_GET['msg'] == 'delete'){ ?>
-            <p><?php echo __('TazaPay user successfully deleted.','wc-tp-payment-gateway'); ?></p>
+            <?php if (isset($_GET['msg'])) { ?>
+                <div class="notice notice-success">
+                    <?php if ($_GET['msg'] == 'delete') { ?>
+                        <p><?php echo __('Tazapay user successfully deleted.', 'wc-tp-payment-gateway'); ?></p>
+                    <?php } ?>
+                </div>
             <?php } ?>
-            </div>
-            <?php }?>
         </div>
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
         <form id="user-filter" method="get">
@@ -477,84 +495,83 @@ function tazapay_render_list_page(){
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
             <!-- Now we can render the completed list table -->
 
-            <?php //$tazapayListTable->search_box( 'search', 'search_id' );?>
+            <?php //$tazapayListTable->search_box( 'search', 'search_id' );
+            ?>
             <?php $tazapayListTable->display() ?>
-        </form>        
+        </form>
     </div>
     <?php
 }
 
-function tazapay_render_edit_page(){
+function tazapay_render_edit_page()
+{
 
-    global $wpdb;   
+    global $wpdb;
     $user_id    = $_GET['user'];
-    $tablename  = $wpdb->prefix.'tazapay_user';
-    $row_user   = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '". $user_id ."'");
+    $tablename  = $wpdb->prefix . 'tazapay_user';
+    $row_user   = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
-    if('edit'===$_REQUEST['action'])
-    {    
-         $row_user = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '". $user_id ."'");
+    if ('edit' === $_REQUEST['action']) {
+        $row_user = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
-         if(count($row_user) > 0)
-         {              
+        if (count($row_user) > 0) {
             $account_id = $row_user->account_id;
-            
-            if(isset($_POST['submit'])){
+
+            if (isset($_POST['submit'])) {
 
                 $new_value = !empty($_POST['account_id']) ? $_POST['account_id'] : '';
 
-                $wpdb->query( $wpdb->prepare( "UPDATE $tablename SET account_id = %s WHERE ID = %s", $new_value, $user_id ) );
+                $wpdb->query($wpdb->prepare("UPDATE $tablename SET account_id = %s WHERE ID = %s", $new_value, $user_id));
 
                 $_GET['msg'] = 'updated';
             }
-            ?>
-             <div class="wrap">
-                <h2><?php  echo __('Edit TazaPay Account UUID','wc-tp-payment-gateway'); ?></h2>
+    ?>
+            <div class="wrap">
+                <h2><?php echo __('Edit Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></h2>
                 <div id="response-message">
-                <?php if($_GET['msg']){ ?>
-                <div class="notice notice-success">        
-                <?php if($_GET['msg'] == 'updated'){ ?>
-                <p><?php echo __('TazaPay Account UUID updated.','wc-tp-payment-gateway'); ?></p>
-                <?php } ?>
-                </div>
-                <?php }?>
+                    <?php if ($_GET['msg']) { ?>
+                        <div class="notice notice-success">
+                            <?php if ($_GET['msg'] == 'updated') { ?>
+                                <p><?php echo __('Tazapay Account UUID updated.', 'wc-tp-payment-gateway'); ?></p>
+                            <?php } ?>
+                        </div>
+                    <?php } ?>
                 </div>
                 <div class="form">
                     <form method="post" action="">
-                        <table class="form-table" >
+                        <table class="form-table">
                             <tr valign="top">
-                                <th scope="row"><label><?php echo __('TazaPay Account UUID','package'); ?></label></th>
-                                <td><input type="text" name="account_id" id="account_id" value="<?php echo $account_id; ?>" placeholder="<?php echo __('TazaPay Account UUID','wc-tp-payment-gateway'); ?>" size="50" required/>
+                                <th scope="row"><label><?php echo __('Tazapay Account UUID', 'package'); ?></label></th>
+                                <td><input type="text" name="account_id" id="account_id" value="<?php echo $account_id; ?>" placeholder="<?php echo __('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?>" size="50" required />
                                 </td>
                             </tr>
                             <tr valign="top">
                                 <th scope="row"></th>
                                 <td>
-                                <input type="submit" name="submit" value="<?php echo __('Update','wc-tp-payment-gateway'); ?>" class="button-primary" />
+                                    <input type="submit" name="submit" value="<?php echo __('Update', 'wc-tp-payment-gateway'); ?>" class="button-primary" />
                                 </td>
                             </tr>
                         </table>
                     </form>
                 </div>
             </div>
-            <?php
-         }
-    } 
+<?php
+        }
+    }
 }
 
-add_filter( 'gettext', 'tazapay_nouserfound_keyword' );
+add_filter('gettext', 'tazapay_nouserfound_keyword');
 /**
-  * Change no items found text message.
-  *
-  * @param $text string 
+ * Change no items found text message.
+ *
+ * @param $text string 
  
-  * @return $text string
-  * * * * * * * * * * * * * * * * * * */
-function tazapay_nouserfound_keyword( $text ) {
-
-    if( is_admin() ) {
-        $text = str_ireplace( 'No items found.', 'No user found.',  $text );
+ * @return $text string
+ * * * * * * * * * * * * * * * * * * */
+function tazapay_nouserfound_keyword($text)
+{
+    if (is_admin()) {
+        $text = str_ireplace('No items found.', 'No user found.',  $text);
     }
-    
     return $text;
 }
