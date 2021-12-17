@@ -1,6 +1,5 @@
 <?php
 global $WCFM, $wp_query;
-
 ?>
 <div class="collapse wcfm-collapse" id="wcfm_tazapay_information">
 	<div class="wcfm-page-headig">

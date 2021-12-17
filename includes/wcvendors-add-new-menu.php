@@ -45,7 +45,7 @@ function tazapay_information_wcvendors()
 		$tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
 		$tazapay_multi_seller_plugin        = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
 
-		if ($sandboxmode == 'yes') {
+		if ($sandboxmode == 'sandbox') {
 			$api_url      = 'https://api-sandbox.tazapay.com';
 			$environment  = 'sandbox';
 		} else {
@@ -62,13 +62,40 @@ function tazapay_information_wcvendors()
 
 		$tablename      = $wpdb->prefix . 'tazapay_user';
 		$seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $user_email . "' AND environment = '" . $environment . "'");
-		$account_id     = $seller_results[0]->account_id;
+		$db_account_id  = isset($seller_results[0]->account_id) ? $seller_results[0]->account_id : '';
+		$apiRequestCall = new WC_TazaPay_Gateway();
+		$getuserapi 	= $apiRequestCall->request_api_getuser($user_email);
 
-		if (empty($account_id)) {
+		if (!empty($getuserapi->data->id)) {
+			$account_id = $getuserapi->data->id;
 
+			if (empty($db_account_id)) {
+
+				$wpdb->insert(
+					$tablename,
+					array(
+						'account_id'           => $account_id,
+						'user_type'            => "seller",
+						'email'                => $getuserapi->data->email,
+						'first_name'           => $getuserapi->data->first_name,
+						'last_name'            => $getuserapi->data->last_name,
+						'contact_code'         => $getuserapi->data->contact_code,
+						'contact_number'       => $getuserapi->data->contact_number,
+						'country'              => $getuserapi->data->country_code,
+						'ind_bus_type'         => $getuserapi->data->ind_bus_type,
+						'business_name'        => $getuserapi->data->business_name,
+						'partners_customer_id' => $getuserapi->data->customer_id,
+						'environment'          => $environment,
+						'created'              => current_time('mysql')
+					),
+					array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+				);
+			}
+		}
+
+		if (empty($db_account_id) || empty($getuserapi->data->id)) {
+			
 			if (isset($_POST['submit'])) {
-
-				$apiRequestCall         = new WC_TazaPay_Gateway();
 
 				$indbustype             = !empty($_POST['indbustype']) ? $_POST['indbustype'] : '';
 				$first_name             = !empty($_POST['first_name']) ? $_POST['first_name'] : '';
@@ -78,8 +105,6 @@ function tazapay_information_wcvendors()
 				$partners_customer_id   = !empty($_POST['partners_customer_id']) ? $_POST['partners_customer_id'] : '';
 				$country                = !empty($_POST['country']) ? $_POST['country'] : '';
 				$seller_email           = $user_email;
-
-				//$countryName          = WC()->countries->countries[$country];
 				$phoneCode              = $apiRequestCall->getPhoneCode($country);
 
 				if ($business_name) {
@@ -105,7 +130,6 @@ function tazapay_information_wcvendors()
 					);
 				}
 
-				//$api_url  = 'https://api-sandbox.tazapay.com/v1/user';
 				$api_endpoint = "/v1/user";
 				$api_url  = $api_url . '/v1/user';
 
@@ -169,9 +193,7 @@ function tazapay_information_wcvendors()
 			<?php
 				}
 			}
-
 			echo '<h2>' . __('Create Tazapay Account', 'wc-tp-payment-gateway') . '</h2><hr>';
-
 			?>
 			<form method="post" name="accountform" action="" class="tazapay_form dokan-form-horizontal">
 				<div class="container">
@@ -250,20 +272,20 @@ function tazapay_information_wcvendors()
 				</div>
 			</form>
 		<?php
-		} else {
+		}
+
+		if (!empty($db_account_id)) {
 
 			$first_name         = $seller_results[0]->first_name;
 			$last_name          = $seller_results[0]->last_name;
-			$user_type          = $seller_results[0]->user_type;
+			$user_type          = "seller";
 			$contact_code       = $seller_results[0]->contact_code;
 			$contact_number     = $seller_results[0]->contact_number;
 			$country_name       = $seller_results[0]->country;
 			$ind_bus_type       = $seller_results[0]->ind_bus_type;
 			$business_name      = $seller_results[0]->business_name;
-			$partners_customer  = $seller_results[0]->partners_customer_id;
 			$created            = $seller_results[0]->created;
 			$environment        = $seller_results[0]->environment;
-
 			$countryName        = WC()->countries->countries[$country_name];
 
 			if ($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'wc-vendors') {
@@ -273,7 +295,7 @@ function tazapay_information_wcvendors()
 			<table class="wp-list-table widefat fixed striped table-view-list">
 				<tr>
 					<th><?php echo __('Tazapay Account UUID:', 'wc-tp-payment-gateway'); ?></th>
-					<td><?php echo $account_id; ?></td>
+					<td><?php echo $db_account_id; ?></td>
 				</tr>
 				<tr>
 					<th><?php echo __('User Type:', 'wc-tp-payment-gateway'); ?></th>
@@ -314,12 +336,6 @@ function tazapay_information_wcvendors()
 					<th><?php echo __('Country:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php echo $countryName; ?></td>
 				</tr>
-				<!-- <tr>
-		    <th><?php //echo __('Partners Customer ID:','wc-tp-payment-gateway'); 
-				?></th>
-		    <td><?php //echo $partners_customer; 
-				?></td>
-		  </tr> -->
 				<tr>
 					<th><?php echo __('Environment:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php echo $environment; ?></td>

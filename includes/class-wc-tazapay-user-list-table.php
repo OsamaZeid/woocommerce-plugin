@@ -134,7 +134,7 @@ class TazaPay_User_List_Table extends WP_List_Table
             case 'ind_bus_type':
             case 'created':
             case 'business_name':
-                //case 'partners_customer':
+           //case 'partners_customer':
             case 'environment':
                 return $item[$column_name];
 

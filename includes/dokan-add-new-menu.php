@@ -33,7 +33,7 @@ function dokan_set_about_tab_title($title, $tab)
     if ('tazapay-information' === $tab) {
         $title = __('Tazapay information');
     }
-
+    
     return $title;
 }
 

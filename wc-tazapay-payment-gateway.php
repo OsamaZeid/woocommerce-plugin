@@ -64,7 +64,6 @@ function tazapay_frontend_enqueue_styles()
 {
     wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-frontend.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');
     wp_enqueue_script('tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
-
     wp_enqueue_script('tazapay-admin', TAZAPAY_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
 }
 
@@ -76,7 +75,6 @@ function tazapay_enqueue_styles()
 {
     wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-form.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');
     wp_enqueue_script('tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
-
     wp_enqueue_script('tazapay-admin', TAZAPAY_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
 }
 
@@ -102,18 +100,23 @@ function tazapay_init_gateway_class()
     require 'includes/class-wc-tazapay-account-form.php';
     require 'includes/wc-order-status-change.php';
 
-    $woocommerce_tz_tazapay_settings    = get_option('woocommerce_tz_tazapay_settings');
-    $tazapay_multi_seller_plugin        = !empty($woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin']) ? $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'] : '';
-    $tazapay_seller_type                = !empty($woocommerce_tz_tazapay_settings['tazapay_seller_type']) ? $woocommerce_tz_tazapay_settings['tazapay_seller_type'] : '';
+    $woocommerce_tz_tazapay_settings = get_option('woocommerce_tz_tazapay_settings');
+    $tazapay_seller_type            = !empty($woocommerce_tz_tazapay_settings['tazapay_seller_type']) ? $woocommerce_tz_tazapay_settings['tazapay_seller_type'] : '';
 
-    if ($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'dokan') {
-        require 'includes/dokan-add-new-menu.php';
+    if (!function_exists('is_plugin_active')) {
+        
+        include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
+        if ($tazapay_seller_type == 'multiseller' && is_plugin_active('dokan-lite/dokan.php')) {
+            require 'includes/dokan-add-new-menu.php';
+        }
+        if ($tazapay_seller_type == 'multiseller' && is_plugin_active('wc-vendors/class-wc-vendors.php')) {
+            require 'includes/wcvendors-add-new-menu.php';
+        }
+        if ($tazapay_seller_type == 'multiseller' && is_plugin_active('wc-multivendor-marketplace/wc-multivendor-marketplace.php') && is_plugin_active('wc-frontend-manager/wc_frontend_manager.php')) {
+            require 'includes/wcfm-add-new-menu.php';
+        }
     }
-    if ($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'wc-vendors') {
-        require 'includes/wcvendors-add-new-menu.php';
-    }
-    if ($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'wcfm-marketplace') {
-        require 'includes/wcfm-add-new-menu.php';
-    }
+
     load_plugin_textdomain('wc-tp-payment-gateway', false, basename(dirname(__FILE__)) . '/languages/');
 }

@@ -87,8 +87,7 @@ function tazapay_order_change()
 {
 
   global $wpdb;
-
-  $orderList    = $wpdb->get_results("SELECT pm.post_id AS order_id FROM {$wpdb->prefix}postmeta AS pm LEFT JOIN {$wpdb->prefix}posts AS p ON pm.post_id = p.ID WHERE p.post_type = 'shop_order' AND p.post_status = 'wc-on-hold' AND pm.meta_key = '_payment_method'");
+  $orderList = $wpdb->get_results("SELECT pm.post_id AS order_id FROM {$wpdb->prefix}postmeta AS pm LEFT JOIN {$wpdb->prefix}posts AS p ON pm.post_id = p.ID WHERE p.post_type = 'shop_order' AND p.post_status = 'wc-on-hold' AND pm.meta_key = '_payment_method'");
 
   foreach ($orderList as $orderPost) {
 

@@ -3,48 +3,75 @@
   global $woocommerce, $wpdb;
 
   $countries_obj = new WC_Countries();
-  $countries = $countries_obj->__get('countries');
+  $countries     = $countries_obj->__get('countries');
 
-  $woocommerce_tz_tazapay_settings = get_option('woocommerce_tz_tazapay_settings');
-  $sandboxmode = $woocommerce_tz_tazapay_settings['sandboxmode'];
-  $tazapay_seller_type = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
-  $tazapay_multi_seller_plugin = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
+  $woocommerce_tz_tazapay_settings  = get_option('woocommerce_tz_tazapay_settings');
+  $sandboxmode                      = $woocommerce_tz_tazapay_settings['sandboxmode'];
+  $tazapay_seller_type              = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
+  $tazapay_multi_seller_plugin      = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
 
   if ($sandboxmode == 'sandbox') {
-    $api_url = 'https://api-sandbox.tazapay.com';
+    $api_url     = 'https://api-sandbox.tazapay.com';
     $environment = 'sandbox';
   } else {
-    $api_url = 'https://api.tazapay.com';
+    $api_url     = 'https://api.tazapay.com';
     $environment = 'production';
   }
 
   if (is_user_logged_in() && $tazapay_seller_type == 'multiseller' && !is_admin()) {
     $seller_user = get_userdata(get_current_user_id());
-    $user_email = $seller_user->user_email;
+    $user_email  = $seller_user->user_email;
   } else {
-    $user_email = $woocommerce_tz_tazapay_settings['seller_email'];
+    $user_email  = $woocommerce_tz_tazapay_settings['seller_email'];
   }
 
   $tablename = $wpdb->prefix . 'tazapay_user';
   $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $user_email . "' AND environment = '" . $environment . "'");
-  $account_id = !empty($seller_results[0]->account_id) ? $seller_results[0]->account_id : '';
+  $db_account_id  = isset($seller_results[0]->account_id) ? $seller_results[0]->account_id : '';
+  $apiRequestCall = new WC_TazaPay_Gateway();
+  $getuserapi   = $apiRequestCall->request_api_getuser($user_email);
 
-  if (empty($account_id)) {
+  if (!empty($getuserapi->data->id)) {
+    $account_id = $getuserapi->data->id;
+
+    if (empty($db_account_id)) {
+
+      $wpdb->insert(
+        $tablename,
+        array(
+          'account_id'           => $account_id,
+          'user_type'            => "seller",
+          'email'                => $getuserapi->data->email,
+          'first_name'           => $getuserapi->data->first_name,
+          'last_name'            => $getuserapi->data->last_name,
+          'contact_code'         => $getuserapi->data->contact_code,
+          'contact_number'       => $getuserapi->data->contact_number,
+          'country'              => $getuserapi->data->country_code,
+          'ind_bus_type'         => $getuserapi->data->ind_bus_type,
+          'business_name'        => $getuserapi->data->business_name,
+          'partners_customer_id' => $getuserapi->data->customer_id,
+          'environment'          => $environment,
+          'created'              => current_time('mysql')
+        ),
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+      );
+    }
+  }
+
+  if (empty($db_account_id) || empty($getuserapi->data->id)) {
 
     if (isset($_POST['submit'])) {
 
-      $apiRequestCall = new WC_TazaPay_Gateway();
-
-      $indbustype = !empty($_POST['indbustype']) ? $_POST['indbustype'] : '';
-      $first_name = !empty($_POST['first_name']) ? $_POST['first_name'] : '';
-      $last_name = !empty($_POST['last_name']) ? $_POST['last_name'] : '';
-      $business_name = !empty($_POST['business_name']) ? $_POST['business_name'] : '';
-      $phone_number = !empty($_POST['phone_number']) ? $_POST['phone_number'] : '';
+      $indbustype           = !empty($_POST['indbustype']) ? $_POST['indbustype'] : '';
+      $first_name           = !empty($_POST['first_name']) ? $_POST['first_name'] : '';
+      $last_name            = !empty($_POST['last_name']) ? $_POST['last_name'] : '';
+      $business_name        = !empty($_POST['business_name']) ? $_POST['business_name'] : '';
+      $phone_number         = !empty($_POST['phone_number']) ? $_POST['phone_number'] : '';
       $partners_customer_id = !empty($_POST['partners_customer_id']) ? $_POST['partners_customer_id'] : '';
-      $country = !empty($_POST['country']) ? $_POST['country'] : '';
-      $seller_email = $user_email;
+      $country              = !empty($_POST['country']) ? $_POST['country'] : '';
+      $seller_email         = $user_email;
 
-      //$countryName          = WC()->countries->countries[$country];
+      //$countryName        = WC()->countries->countries[$country];
       $phoneCode = $apiRequestCall->getPhoneCode($country);
 
       if ($business_name) {
@@ -70,11 +97,9 @@
         );
       }
 
-      //$api_url  = 'https://api-sandbox.tazapay.com/v1/user';
       $api_endpoint = "/v1/user";
-      $api_url = $api_url . '/v1/user';
-
-      $createUser = $apiRequestCall->request_apicall($api_url, $api_endpoint, $args, '');
+      $api_url      = $api_url . '/v1/user';
+      $createUser   = $apiRequestCall->request_apicall($api_url, $api_endpoint, $args, '');
 
       if ($createUser->status == 'success') {
 
@@ -94,7 +119,7 @@
             'country' => $country,
             'ind_bus_type' => $indbustype,
             'business_name' => $business_name,
-            'partners_customer_id' => $partners_customer_id,
+            //'partners_customer_id' => $partners_customer_id,
             'environment' => $environment,
             'created' => current_time('mysql'),
           ),
@@ -108,12 +133,12 @@
           <p><?php _e($createUser->message, 'wc-tp-payment-gateway'); ?></p>
         </div>
         <?php
-        if (is_admin()) {
-          wp_redirect(admin_url('?page=tazapay-signup-form'), 301);
-        } else {
-          wp_redirect(get_the_permalink() . 'settings/tazapay-information/', 301);
-        }
-        exit();
+        // if (is_admin()) {
+        //   wp_redirect(admin_url('?page=tazapay-signup-form'), 301);
+        // } else {
+        //   wp_redirect(get_the_permalink(), 301);
+        // }
+        // exit();
       } else {
 
         $create_user_error_msg = "";
@@ -192,13 +217,6 @@
             <input type="text" placeholder="Phone Number" name="phone_number" id="phone_number">
           </div>
         </div>
-        <!-- <div class="dokan-form-group">
-    <label for="partnerscustomerid" class="dokan-w3 dokan-control-label"><b><?php //echo __('Partners Customer ID', 'wc-tp-payment-gateway');
-                                                                            ?></b></label>
-    <div class="dokan-w5">
-    <input type="text" placeholder="Partners Customer ID" name="partners_customer_id" id="partners_customer_id">
-    </div>
-    </div> -->
         <div class="dokan-form-group">
           <label for="country" class="dokan-w3 dokan-control-label"><b><?php echo __('Country', 'wc-tp-payment-gateway'); ?></b></label>
           <div class="dokan-w5">
@@ -218,7 +236,9 @@
       </div>
     </form>
   <?php
-  } else {
+  }
+
+  if (!empty($db_account_id)) {
 
     $first_name = $seller_results[0]->first_name;
     $last_name = $seller_results[0]->last_name;
@@ -233,9 +253,9 @@
     $environment = $seller_results[0]->environment;
     $countryName = WC()->countries->countries[$country_name];
 
-    if (is_admin()) {
-      echo '<div class="back-button"><h2>' . __('Tazapay Account Information', 'wc-tp-payment-gateway') . '</h2><a href="admin.php?page=wc-settings&tab=checkout&section=tz_tazapay" class="button-primary" title="Back to settings page">' . __('Back to settings page', 'wc-tp-payment-gateway') . '</a></div>';
-    }
+    // if (is_admin()) {
+    //   echo '<div class="back-button"><h2>' . __('Tazapay Account Information', 'wc-tp-payment-gateway') . '</h2><a href="admin.php?page=wc-settings&tab=checkout&section=tz_tazapay" class="button-primary" title="Back to settings page">' . __('Back to settings page', 'wc-tp-payment-gateway') . '</a></div>';
+    // }
   ?>
     <table class="wp-list-table widefat fixed striped table-view-list">
       <tr>
