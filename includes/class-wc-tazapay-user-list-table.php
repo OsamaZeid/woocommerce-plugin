@@ -514,7 +514,7 @@ function tazapay_render_edit_page()
     if ('edit' === $_REQUEST['action']) {
         $row_user = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
-        if (count($row_user) > 0) {
+        if (count(array($row_user)) > 0) {
             $account_id = $row_user->account_id;
 
             if (isset($_POST['submit'])) {
@@ -529,7 +529,7 @@ function tazapay_render_edit_page()
             <div class="wrap">
                 <h2><?php echo __('Edit Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></h2>
                 <div id="response-message">
-                    <?php if ($_GET['msg']) { ?>
+                    <?php if (!empty($_GET['msg'])) { ?>
                         <div class="notice notice-success">
                             <?php if ($_GET['msg'] == 'updated') { ?>
                                 <p><?php echo __('Tazapay Account UUID updated.', 'wc-tp-payment-gateway'); ?></p>

@@ -91,15 +91,15 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
             $activeplugin = array(
                 'dokan'            => __('Dokan', 'wc-tp-payment-gateway')
             );
-        }else if (is_plugin_active('wc-vendors/class-wc-vendors.php')) {
+        } else if (is_plugin_active('wc-vendors/class-wc-vendors.php')) {
             $activeplugin = array(
                 'wc-vendors'       => __('WC Vendors', 'wc-tp-payment-gateway')
             );
-        }else if (is_plugin_active('wc-multivendor-marketplace/wc-multivendor-marketplace.php')) {
+        } else if (is_plugin_active('wc-multivendor-marketplace/wc-multivendor-marketplace.php')) {
             $activeplugin = array(
                 'wcfm-marketplace' => __('WCFM Marketplace', 'wc-tp-payment-gateway')
             );
-        }else {
+        } else {
             $activeplugin = array(
                 '' => __('No Marketplace Plugin Active', 'wc-tp-payment-gateway')
             );
@@ -155,13 +155,6 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
                 'description' => __('Please input the email ID which you used to signup with Tazapay', 'wc-tp-payment-gateway'),
                 'class'       => 'tazapay-singleseller'
             ),
-            'seller_id' => array(
-                'title'       => __('Platform\'s Seller ID', 'wc-tp-payment-gateway'),
-                'type'        => 'text',
-                'description' => __('Tazapay account UUID', 'wc-tp-payment-gateway'),
-                //'description' => __('Please input the Tazapay account UUID you receive when you click the button below <br><br><a href="?page=tazapay-signup-form" class="button-primary" target="_blank" title="Click Here">' . $text4 . '</a><br><br>' . $text5, 'wc-tp-payment-gateway'),
-                'class'       => 'tazapay-singleseller'
-            ),
             'tazapay_seller_type' => array(
                 'title'       => __('Platform Type', 'wc-tp-payment-gateway'),
                 'type'        => 'select',
@@ -179,12 +172,19 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
                 'description' => __('Please select the plugin you use to manage vendors (sellers) on your platform', 'wc-tp-payment-gateway'),
                 'class'       => 'tazapay-multiseller'
             ),
-            'enabled' => array(
-                'title'       => __('Enable Tazapay Payments', 'wc-tp-payment-gateway'),
-                'type'        => 'checkbox',
-                'description' => __('Check this to enable checkout with Tazapay', 'wc-tp-payment-gateway'),
-                'default'     => 'yes',
-                'class'       => ''
+            // 'enabled' => array(
+            //     'title'       => __('Enable Tazapay Payments', 'wc-tp-payment-gateway'),
+            //     'type'        => 'checkbox',
+            //     'description' => __('Check this to enable checkout with Tazapay', 'wc-tp-payment-gateway'),
+            //     'default'     => 'yes',
+            //     'class'       => ''
+            // ),
+            'seller_id' => array(
+                //'title'       => __('Platform\'s Seller ID', 'wc-tp-payment-gateway'),
+                'type'        => 'hidden',
+                //'description' => __('Tazapay account UUID', 'wc-tp-payment-gateway'),
+                //'description' => __('Please input the Tazapay account UUID you receive when you click the button below <br><br><a href="?page=tazapay-signup-form" class="button-primary" target="_blank" title="Click Here">' . $text4 . '</a><br><br>' . $text5, 'wc-tp-payment-gateway'),
+                'class'       => 'tazapay-singleseller'
             )
         );
     }
@@ -199,6 +199,16 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
             $woocommerce_tz_tazapay_settings              = get_option('woocommerce_tz_tazapay_settings');
             $woocommerce_tz_tazapay_settings['seller_id'] = $seller_account_id;
             update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
+        } else {
+            foreach ($getuserapi->errors as $key => $error) {
+                if (isset($error->message)) {                    
+                    ?>
+                    <div class="notice notice-error is-dismissible">
+                        <p><?php echo $error->message; ?></p>
+                    </div>
+                    <?php
+                }
+            }
         }
     }
     /*
@@ -455,10 +465,10 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
     */
     public function validate_fields()
     {
-        // if( empty( $_POST[ 'seller_email' ] ) ) {
-        //    wc_add_notice( 'TazaPay E-mail is required!', 'error' );
-        //    return false;
-        // }
+        if( !empty( $_POST[ 'billing_email' ] ) && $_POST[ 'billing_email' ] == $this->get_option('seller_email')) {
+           wc_add_notice( 'Buyer and seller email should not be identical, Please change buyer email address.', 'error' );
+           return false;
+        }
         return true;
     }
 
@@ -609,7 +619,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
             ]
         );
         $response = curl_exec($curl);
-        
+
         $info = curl_getinfo($curl);
         $header_info = curl_getinfo($curl, CURLINFO_HEADER_OUT);
 
@@ -844,7 +854,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
         $user_email     = $order->get_billing_email();
         $phoneCode      = $this->getPhoneCode($order->get_billing_country());
         $tablename      = $wpdb->prefix . 'tazapay_user';
-
+        $site_currency  = get_option('woocommerce_currency');
         // for multiseller
         if ($this->tazapay_seller_type == 'multiseller') {
 
@@ -875,8 +885,10 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
 
         if ($getuserapi->status == 'success') {
             $buyer_country = $getuserapi->data->country_code;
+            $buyer_country_name = $getuserapi->data->country;
         } else {
             $buyer_country = $order->get_billing_country();
+            $buyer_country_name = WC()->countries->countries[$order->get_billing_country()];
         }
 
         $countryconfig  = $this->request_api_country_config($getsellerapi->data->country_code);
@@ -885,16 +897,16 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
 
             $invoice_currency_check = $this->request_api_invoicecurrency($buyer_country, $getsellerapi->data->country_code);
             $store_currency         = get_woocommerce_currency();
-            $list_currency          = implode(", ", $invoice_currency_check->data->currencies);
+            //$list_currency        = implode(", ", $invoice_currency_check->data->currencies);
 
             if ($invoice_currency_check->status == 'success' && in_array($store_currency, $invoice_currency_check->data->currencies)) {
                 $invoice_currency = true;
             } else {
-                $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getsellerapi->data->country . ' are currently not supported in ' . $list_currency . '', 'wc-tp-payment-gateway');
+                $message = __('Transactions between buyers from ' . $buyer_country_name . ' and sellers from ' . $getsellerapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
                 wc_add_notice($message, 'error');
             }
         } else {
-            $country_config_message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getsellerapi->data->country . ' are currently not supported', 'wc-tp-payment-gateway');
+            $country_config_message = __('Transactions between buyers from ' . $buyer_country_name . ' and sellers from ' . $getsellerapi->data->country . ' are currently not supported', 'wc-tp-payment-gateway');
             wc_add_notice($country_config_message, 'error');
         }
 
@@ -1145,7 +1157,7 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
             global $wpdb;
             $tablename      = $wpdb->prefix . 'tazapay_user';
 
-?>
+            ?>
             <h2><?php echo __('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
             <p><?php echo __('Pay Now, Release Later powered by Tazapay', 'wc-tp-payment-gateway'); ?></p>
             <table class="woocommerce-table shop_table gift_info">
@@ -1396,6 +1408,7 @@ function payment_gateway_disable_tazapay($available_gateways)
     $payment_id        = 'tz_tazapay'; // Here define the payment Id to disable
     $field_key         = 'billing_country'; // Here set the targeted field
     $field_value       = WC()->session->get('field_' . $field_key);
+    $site_currency     = get_option('woocommerce_currency');
 
     if (isset($available_gateways[$payment_id]) && !empty($field_value)) {
 
@@ -1429,14 +1442,14 @@ function payment_gateway_disable_tazapay($available_gateways)
 
                     $invoice_currency_check = $request_api_call->request_api_invoicecurrency($field_value, $getuserapi->data->country_code);
                     $store_currency         = get_woocommerce_currency();
-                    $list_currency          = implode(", ", $invoice_currency_check->data->currencies);
+                    //$list_currency        = implode(", ", $invoice_currency_check->data->currencies);
 
                     if ($invoice_currency_check->status == 'success' && in_array($store_currency, $invoice_currency_check->data->currencies)) {
                         // no code required.
                     } else {
                         unset($available_gateways[$payment_id]);
                         $buyer_country     = WC()->countries->countries[$field_value];
-                        $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $list_currency . '', 'wc-tp-payment-gateway');
+                        $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
                         wc_add_notice($message, 'error');
                     }
                 } else {
@@ -1456,14 +1469,14 @@ function payment_gateway_disable_tazapay($available_gateways)
 
                 $invoice_currency_check = $request_api_call->request_api_invoicecurrency($field_value, $getuserapi->data->country_code);
                 $store_currency         = get_woocommerce_currency();
-                $list_currency          = implode(", ", $invoice_currency_check->data->currencies);
+                //$list_currency        = implode(", ", $invoice_currency_check->data->currencies);                
 
                 if ($invoice_currency_check->status == 'success' && in_array($store_currency, $invoice_currency_check->data->currencies)) {
                     // no code required.
                 } else {
                     unset($available_gateways[$payment_id]);
                     $buyer_country     = WC()->countries->countries[$field_value];
-                    $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $list_currency . '', 'wc-tp-payment-gateway');
+                    $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
                     wc_add_notice($message, 'error');
                 }
             } else {
