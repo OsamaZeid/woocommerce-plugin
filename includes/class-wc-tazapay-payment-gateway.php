@@ -53,7 +53,6 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'getuser_info_options'));
 
-        add_action('woocommerce_view_order', array($this, 'tazapay_view_order_and_thankyou_page'), 20);
         add_action('woocommerce_thankyou', array($this, 'tazapay_view_order_and_thankyou_page'), 20);
 
         add_filter('woocommerce_gateway_icon', array($this, 'tazapay_woocommerce_icons'), 10, 2);
@@ -1578,5 +1577,95 @@ function custom_orders_list_column_content($column, $post_id)
                 echo $payment_title;
             }
             break;
+    }
+}
+
+add_action('woocommerce_view_order', 'tazapay_view_order_page', 20);
+
+function tazapay_view_order_page($order_id)
+{
+    $request_api_call = new WC_TazaPay_Gateway();
+    $order              = wc_get_order($order_id);
+    $paymentMethod      = get_post_meta($order_id, '_payment_method', true);
+
+    if ($paymentMethod == 'tz_tazapay') {
+
+        $user_email     = $order->get_billing_email();
+        $txn_no         = get_post_meta($order_id, 'txn_no', true);
+        $redirect_url   = get_post_meta($order_id, 'redirect_url', true);
+
+        global $wpdb;
+        $tablename      = $wpdb->prefix . 'tazapay_user';
+
+    ?>
+        <h2><?php echo __('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
+        <p><?php echo __('Pay Now, Release Later powered by Tazapay', 'wc-tp-payment-gateway'); ?></p>
+        <table class="woocommerce-table shop_table gift_info">
+            <tfoot>
+                <tr>
+                    <th scope="row"><?php echo __('Tazapay Payer E-Mail', 'wc-tp-payment-gateway'); ?></th>
+                    <td><?php echo $user_email; ?></td>
+                </tr>
+                <?php if ($txn_no) { ?>
+                    <tr>
+                        <th scope="row"><?php echo __('Transaction no', 'wc-tp-payment-gateway'); ?></th>
+                        <td><?php echo $txn_no; ?></td>
+                    </tr>
+                <?php } ?>
+                <tr>
+                    <th scope="row"><?php echo __('Payment status', 'wc-tp-payment-gateway'); ?></th>
+                    <td>
+                        <?php
+                        $getEscrowstate = $request_api_call->request_api_order_status($txn_no);
+
+                        if (isset($_POST['order-status']) && !empty($getEscrowstate->data->state) && !empty($getEscrowstate->data->sub_state)) {
+
+                            echo '<p><strong>Escrow state:</strong> ' . $getEscrowstate->data->state . '</p>';
+                            echo '<p><strong>Escrow sub_state:</strong> ' . $getEscrowstate->data->sub_state . '</p>';
+                        }
+                        ?>
+                        <form method="post" name="tazapay-order-status" action="">
+                            <input type="submit" name="order-status" value="Refresh Status">
+                        </form>
+                        <?php
+
+                        if (isset($getEscrowstate->status) && $getEscrowstate->status == 'success' && ($getEscrowstate->data->state == 'Payment_Received' || $getEscrowstate->data->sub_state == 'Payment_Done')) {
+                            /*
+                                * Order status change on-hold to processing
+                                */
+                            $order->update_status('processing');
+
+                            if ($getEscrowstate->data->state == 'Payment_Received') {
+                                //echo $getEscrowstate->data->state;
+                                echo __('Completed', 'wc-tp-payment-gateway');
+                            }
+
+                            if ($getEscrowstate->data->sub_state == 'Payment_Done') {
+                                //echo $getEscrowstate->data->sub_state;
+                                echo __('Completed', 'wc-tp-payment-gateway');
+                            }
+                        } else {
+
+                            printf('<a class="woocommerce-button button pay" href="%s">%s</a>', $redirect_url, __("Pay With Escrow", "wc-tp-payment-gateway"));
+                        }
+                        ?>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+<?php
+
+        $order_notes = $request_api_call->get_private_order_notes($order_id);
+        if (isset($order_notes) && count($order_notes) > 1) {
+            foreach ($order_notes as $note) {
+                $note_id = $note['note_id'];
+                $note_date = $note['note_date'];
+                $note_author = $note['note_author'];
+                $note_content = $note['note_content'];
+
+                // Outputting each note content for the order
+                echo '<p><strong>' . date('F j, Y h:i A', strtotime($note_date)) . '</strong> ' . $note_content . '</p>';
+            }
+        }
     }
 }
