@@ -201,12 +201,12 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
             update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
         } else {
             foreach ($getuserapi->errors as $key => $error) {
-                if (isset($error->message)) {                    
-                    ?>
+                if (isset($error->message)) {
+?>
                     <div class="notice notice-error is-dismissible">
                         <p><?php echo $error->message; ?></p>
                     </div>
-                    <?php
+            <?php
                 }
             }
         }
@@ -465,9 +465,9 @@ class WC_TazaPay_Gateway extends WC_Payment_Gateway
     */
     public function validate_fields()
     {
-        if( !empty( $_POST[ 'billing_email' ] ) && $_POST[ 'billing_email' ] == $this->get_option('seller_email')) {
-           wc_add_notice( 'Buyer and seller email should not be identical, Please change buyer email address.', 'error' );
-           return false;
+        if (!empty($_POST['billing_email']) && $_POST['billing_email'] == $this->get_option('seller_email')) {
+            wc_add_notice('Buyer and seller email should not be identical, Please change buyer email address.', 'error');
+            return false;
         }
         return true;
     }
@@ -1414,49 +1414,51 @@ function payment_gateway_disable_tazapay($available_gateways)
 
         if ($request_api_call->tazapay_seller_type == 'multiseller') {
             // for multiseller
-            foreach (WC()->cart->get_cart() as $cart_item) {
-                $item_name          = $cart_item['data']->get_title();
-                $product_id         = $cart_item['data']->get_id();
-                $vendor_id          = get_post_field('post_author', $product_id);
-                $vendor             = get_userdata($vendor_id);
-                $seller_email[]     = $vendor->user_email;
-            }
-            $seller_email           = array_unique($seller_email);
-            $sellercount            = count($seller_email);
+            if (sizeof(WC()->cart->get_cart()) > 0) {
+                foreach (WC()->cart->get_cart() as $cart_item) {
+                    $item_name          = $cart_item['data']->get_title();
+                    $product_id         = $cart_item['data']->get_id();
+                    $vendor_id          = get_post_field('post_author', $product_id);
+                    $vendor             = get_userdata($vendor_id);
+                    $seller_email[]     = $vendor->user_email;
+                }
+                $seller_email           = array_unique($seller_email);
+                $sellercount            = count($seller_email);
 
-            $blogusers = get_users('role=administrator');
-            foreach ($blogusers as $user) {
-                $admin_email = $user->user_email;
-            }
+                $blogusers = get_users('role=administrator');
+                foreach ($blogusers as $user) {
+                    $admin_email = $user->user_email;
+                }
 
-            if ($seller_email[0] == $admin_email) {
-                $seller_email[0] = $request_api_call->seller_email;
-            }
+                if ($seller_email[0] == $admin_email) {
+                    $seller_email[0] = $request_api_call->seller_email;
+                }
 
-            if ($sellercount == 1) {
+                if ($sellercount == 1) {
 
-                $getuserapi        = $request_api_call->request_api_getuser($seller_email[0]);
-                $countryconfig     = $request_api_call->request_api_country_config($getuserapi->data->country_code);
+                    $getuserapi        = $request_api_call->request_api_getuser($seller_email[0]);
+                    $countryconfig     = $request_api_call->request_api_country_config($getuserapi->data->country_code);
 
-                if ($countryconfig->status == 'success' && in_array($field_value, $countryconfig->data->buyer_countries)) {
+                    if ($countryconfig->status == 'success' && in_array($field_value, $countryconfig->data->buyer_countries)) {
 
-                    $invoice_currency_check = $request_api_call->request_api_invoicecurrency($field_value, $getuserapi->data->country_code);
-                    $store_currency         = get_woocommerce_currency();
-                    //$list_currency        = implode(", ", $invoice_currency_check->data->currencies);
+                        $invoice_currency_check = $request_api_call->request_api_invoicecurrency($field_value, $getuserapi->data->country_code);
+                        $store_currency         = get_woocommerce_currency();
+                        //$list_currency        = implode(", ", $invoice_currency_check->data->currencies);
 
-                    if ($invoice_currency_check->status == 'success' && in_array($store_currency, $invoice_currency_check->data->currencies)) {
-                        // no code required.
+                        if ($invoice_currency_check->status == 'success' && in_array($store_currency, $invoice_currency_check->data->currencies)) {
+                            // no code required.
+                        } else {
+                            unset($available_gateways[$payment_id]);
+                            $buyer_country     = WC()->countries->countries[$field_value];
+                            $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
+                            wc_add_notice($message, 'error');
+                        }
                     } else {
                         unset($available_gateways[$payment_id]);
                         $buyer_country     = WC()->countries->countries[$field_value];
-                        $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
-                        wc_add_notice($message, 'error');
+                        $country_config_message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported', 'wc-tp-payment-gateway');
+                        wc_add_notice($country_config_message, 'error');
                     }
-                } else {
-                    unset($available_gateways[$payment_id]);
-                    $buyer_country     = WC()->countries->countries[$field_value];
-                    $country_config_message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported', 'wc-tp-payment-gateway');
-                    wc_add_notice($country_config_message, 'error');
                 }
             }
         } else {
