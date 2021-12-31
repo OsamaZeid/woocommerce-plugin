@@ -3,7 +3,7 @@
 /**
  * WCFM - Custom Menus Query Var
  */
-function wcfmcsm_query_vars($query_vars)
+function tcpg_query_vars($query_vars)
 {
 	$wcfm_modified_endpoints = (array) get_option('wcfm_endpoints');
 
@@ -15,12 +15,12 @@ function wcfmcsm_query_vars($query_vars)
 
 	return $query_vars;
 }
-add_filter('wcfm_query_vars', 'wcfmcsm_query_vars', 50);
+add_filter('wcfm_query_vars', 'tcpg_query_vars', 50);
 
 /**
  * WCFM - Custom Menus End Point Title
  */
-function wcfmcsm_endpoint_title($title, $endpoint)
+function tcpg_endpoint_title($title, $endpoint)
 {
 	global $wp;
 	switch ($endpoint) {
@@ -31,12 +31,12 @@ function wcfmcsm_endpoint_title($title, $endpoint)
 
 	return $title;
 }
-add_filter('wcfm_endpoint_title', 'wcfmcsm_endpoint_title', 50, 2);
+add_filter('wcfm_endpoint_title', 'tcpg_endpoint_title', 50, 2);
 
 /**
  * WCFM - Custom Menus Endpoint Intialize
  */
-function wcfmcsm_init()
+function tcpg_init()
 {
 	global $WCFM_Query;
 
@@ -50,21 +50,18 @@ function wcfmcsm_init()
 		update_option('wcfm_updated_end_point_cms', 1);
 	}
 }
-add_action('init', 'wcfmcsm_init', 50);
+add_action('init', 'tcpg_init', 50);
 
 /**
  * WCFM - Custom Menus Endpoiint Edit
  */
-function wcfm_custom_menus_endpoints_slug($endpoints)
+function tcpg_custom_menus_endpoints_slug($endpoints)
 {
-
 	$custom_menus_endpoints = array('wcfm-tazapay-information' => 'tazapayinformation');
-
 	$endpoints = array_merge($endpoints, $custom_menus_endpoints);
-
 	return $endpoints;
 }
-add_filter('wcfm_endpoints_slug', 'wcfm_custom_menus_endpoints_slug');
+add_filter('wcfm_endpoints_slug', 'tcpg_custom_menus_endpoints_slug');
 
 if (!function_exists('get_wcfm_custom_menus_url')) {
 	function get_wcfm_custom_menus_url($endpoint)
@@ -79,7 +76,7 @@ if (!function_exists('get_wcfm_custom_menus_url')) {
 /**
  * WCFM - Custom Menus
  */
-function wcfmcsm_wcfm_menus($menus)
+function tcpg_wcfm_menus($menus)
 {
 	global $WCFM;
 
@@ -88,16 +85,14 @@ function wcfmcsm_wcfm_menus($menus)
 		'url' => get_wcfm_custom_menus_url('tazapayinformation'),
 		'icon' => 'cubes'
 	);
-
-
 	return $menus;
 }
-add_filter('wcfm_menus', 'wcfmcsm_wcfm_menus', 20);
+add_filter('wcfm_menus', 'tcpg_wcfm_menus', 20);
 
 /**
  *  WCFM - Custom Menus Views
  */
-function wcfm_csm_load_views($end_point)
+function tcpg_csm_load_views($end_point)
 {
 	global $WCFM, $WCFMu;
 	$plugin_path = trailingslashit(dirname(__FILE__));
@@ -108,5 +103,5 @@ function wcfm_csm_load_views($end_point)
 			break;
 	}
 }
-add_action('wcfm_load_views', 'wcfm_csm_load_views', 50);
-add_action('before_wcfm_load_views', 'wcfm_csm_load_views', 50);
+add_action('wcfm_load_views', 'tcpg_csm_load_views', 50);
+add_action('before_wcfm_load_views', 'tcpg_csm_load_views', 50);

@@ -28,8 +28,8 @@
   $tablename = $wpdb->prefix . 'tazapay_user';
   $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $user_email . "' AND environment = '" . $environment . "'");
   $db_account_id  = isset($seller_results[0]->account_id) ? $seller_results[0]->account_id : '';
-  $apiRequestCall = new WC_TazaPay_Gateway();
-  $getuserapi   = $apiRequestCall->request_api_getuser($user_email);
+  $apiRequestCall = new TCPG_Gateway();
+  $getuserapi   = $apiRequestCall->tcpg_request_api_getuser($user_email);
 
   if (!empty($getuserapi->data->id)) {
     $account_id = $getuserapi->data->id;
@@ -62,17 +62,16 @@
 
     if (isset($_POST['submit'])) {
 
-      $indbustype           = !empty($_POST['indbustype']) ? $_POST['indbustype'] : '';
-      $first_name           = !empty($_POST['first_name']) ? $_POST['first_name'] : '';
-      $last_name            = !empty($_POST['last_name']) ? $_POST['last_name'] : '';
-      $business_name        = !empty($_POST['business_name']) ? $_POST['business_name'] : '';
-      $phone_number         = !empty($_POST['phone_number']) ? $_POST['phone_number'] : '';
-      $partners_customer_id = !empty($_POST['partners_customer_id']) ? $_POST['partners_customer_id'] : '';
-      $country              = !empty($_POST['country']) ? $_POST['country'] : '';
+      $indbustype           = sanitize_text_field($_POST['indbustype']);
+      $first_name           = sanitize_text_field($_POST['first_name']);
+      $last_name            = sanitize_text_field($_POST['last_name']);
+      $business_name        = sanitize_text_field($_POST['business_name']);
+      $phone_number         = sanitize_text_field($_POST['phone_number']);
+      $partners_customer_id = sanitize_text_field($_POST['partners_customer_id']);
+      $country              = sanitize_text_field($_POST['country']);
       $seller_email         = $user_email;
 
-      //$countryName        = WC()->countries->countries[$country];
-      $phoneCode = $apiRequestCall->getPhoneCode($country);
+      $phoneCode = $apiRequestCall->tcpg_getphonecode($country);
 
       if ($business_name) {
         $args = array(
@@ -99,7 +98,7 @@
 
       $api_endpoint = "/v1/user";
       $api_url      = $api_url . '/v1/user';
-      $createUser   = $apiRequestCall->request_apicall($api_url, $api_endpoint, $args, '');
+      $createUser   = $apiRequestCall->tcpg_request_apicall($api_url, $api_endpoint, $args, '');
 
       if ($createUser->status == 'success') {
 
@@ -119,7 +118,6 @@
             'country' => $country,
             'ind_bus_type' => $indbustype,
             'business_name' => $business_name,
-            //'partners_customer_id' => $partners_customer_id,
             'environment' => $environment,
             'created' => current_time('mysql'),
           ),
@@ -133,12 +131,6 @@
           <p><?php _e($createUser->message, 'wc-tp-payment-gateway'); ?></p>
         </div>
         <?php
-        // if (is_admin()) {
-        //   wp_redirect(admin_url('?page=tazapay-signup-form'), 301);
-        // } else {
-        //   wp_redirect(get_the_permalink(), 301);
-        // }
-        // exit();
       } else {
 
         $create_user_error_msg = "";
@@ -203,7 +195,7 @@
             <?php
             if ($user_email) {
             ?>
-              <input type="text" placeholder="Enter Email" name="email" id="email" value="<?php echo $user_email; ?>" readonly disabled>
+              <input type="text" placeholder="Enter Email" name="email" id="email" value="<?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?>" readonly disabled>
             <?php } else { ?>
               <input type="text" placeholder="Enter Email" name="email" id="email">
             <?php
@@ -225,7 +217,7 @@
               <?php
               foreach ($countries as $country_code => $country) {
               ?>
-                <option value="<?php echo $country_code; ?>"><?php echo $country; ?></option>
+                <option value="<?php esc_html_e($country_code, 'wc-tp-payment-gateway'); ?>"><?php esc_html_e($country, 'wc-tp-payment-gateway'); ?></option>
               <?php
               }
               ?>
@@ -252,62 +244,58 @@
     $created = $seller_results[0]->created;
     $environment = $seller_results[0]->environment;
     $countryName = WC()->countries->countries[$country_name];
-
-    // if (is_admin()) {
-    //   echo '<div class="back-button"><h2>' . __('Tazapay Account Information', 'wc-tp-payment-gateway') . '</h2><a href="admin.php?page=wc-settings&tab=checkout&section=tz_tazapay" class="button-primary" title="Back to settings page">' . __('Back to settings page', 'wc-tp-payment-gateway') . '</a></div>';
-    // }
   ?>
     <table class="wp-list-table widefat fixed striped table-view-list">
       <tr>
         <th><?php echo __('Tazapay Account UUID:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $account_id; ?></td>
+        <td><?php esc_html_e($account_id, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <tr>
         <th><?php echo __('User Type:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $user_type; ?></td>
+        <td><?php esc_html_e($user_type, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <tr>
         <th><?php echo __('Entity Type:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $ind_bus_type; ?></td>
+        <td><?php esc_html_e($ind_bus_type, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <?php if ($business_name) { ?>
         <tr>
           <th><?php echo __('Bussiness Name:', 'wc-tp-payment-gateway'); ?></th>
-          <td><?php echo $business_name; ?></td>
+          <td><?php esc_html_e($business_name, 'wc-tp-payment-gateway'); ?></td>
         </tr>
       <?php } else { ?>
         <tr>
           <th><?php echo __('First Name:', 'wc-tp-payment-gateway'); ?></th>
-          <td><?php echo $first_name; ?></td>
+          <td><?php esc_html_e($first_name, 'wc-tp-payment-gateway'); ?></td>
         </tr>
         <tr>
           <th><?php echo __('Last Name:', 'wc-tp-payment-gateway'); ?></th>
-          <td><?php echo $last_name; ?></td>
+          <td><?php esc_html_e($last_name, 'wc-tp-payment-gateway'); ?></td>
         </tr>
       <?php } ?>
       <tr>
         <th><?php echo __('E-mail:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $user_email; ?></td>
+        <td><?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <tr>
         <th><?php echo __('Contact Code:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $contact_code; ?></td>
+        <td><?php esc_html_e($contact_code, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <tr>
         <th><?php echo __('Contact Number:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $contact_number; ?></td>
+        <td><?php esc_html_e($contact_number, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <tr>
         <th><?php echo __('Country:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $countryName; ?></td>
+        <td><?php esc_html_e($countryName, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <tr>
         <th><?php echo __('Environment:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $environment; ?></td>
+        <td><?php esc_html_e($environment, 'wc-tp-payment-gateway'); ?></td>
       </tr>
       <tr>
         <th><?php echo __('Created At:', 'wc-tp-payment-gateway'); ?></th>
-        <td><?php echo $created; ?></td>
+        <td><?php esc_html_e($created, 'wc-tp-payment-gateway'); ?></td>
       </tr>
     </table>
   <?php

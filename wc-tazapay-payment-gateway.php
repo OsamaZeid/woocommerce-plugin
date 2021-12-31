@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name:       WooCommerce Tazapay Payment Gateway
+ * Plugin Name:       Tazapay Checkout Payment Gateway
  * Plugin URI:        https://www.logicrays.com/
  * Description:       Pay securely with buyer protection.
  * Version:           1.0.0
@@ -11,13 +11,15 @@
  * Text Domain:       wc-tp-payment-gateway
  * Domain Path:       /languages
  */
-define('TAZAPAY_CSS_JSS_VERISON', time());
-define('TAZAPAY_PUBLIC_ASSETS_DIR', plugins_url('assets/', __FILE__));
+define('TCPG_CSS_JSS_VERISON', time());
+define('TCPG_PUBLIC_ASSETS_DIR', plugins_url('assets/', __FILE__));
 $plugin = plugin_basename(__FILE__);
+register_activation_hook(__FILE__, 'tcpg_user_install');
 
-register_activation_hook(__FILE__, 'tazapay_user_install');
-
-function tazapay_user_install()
+/*
+* Tazapay user create table.
+*/
+function tcpg_user_install()
 {
     global $wpdb;
 
@@ -49,40 +51,40 @@ function tazapay_user_install()
 /*
 * This action hook registers our PHP class as a WooCommerce payment gateway
 */
-add_filter('woocommerce_payment_gateways', 'tazapay_add_gateway_class');
-function tazapay_add_gateway_class($gateways)
+add_filter('woocommerce_payment_gateways', 'tcpg_add_gateway_class');
+function tcpg_add_gateway_class($gateways)
 {
-    $gateways[] = 'WC_TazaPay_Gateway'; // your class name is here
+    $gateways[] = 'TCPG_Gateway';
     return $gateways;
 }
 
 /*
-* Frontend css
+* Frontend css and js
 */
-add_action('wp_enqueue_scripts', 'tazapay_frontend_enqueue_styles');
-function tazapay_frontend_enqueue_styles()
+add_action('wp_enqueue_scripts', 'tcpg_frontend_enqueue_styles');
+function tcpg_frontend_enqueue_styles()
 {
-    wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-frontend.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');
-    wp_enqueue_script('tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
-    wp_enqueue_script('tazapay-admin', TAZAPAY_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
+    wp_enqueue_style('tazapay_form_css', TCPG_PUBLIC_ASSETS_DIR . 'css/tazapay-frontend.css', array(), TCPG_CSS_JSS_VERISON, 'all');
+    wp_enqueue_script('tazapay_validate_js', TCPG_PUBLIC_ASSETS_DIR . 'js/jquery.validate.min.js', array('jquery'), TCPG_CSS_JSS_VERISON, true);
+    wp_enqueue_script('tazapay-admin', TCPG_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TCPG_CSS_JSS_VERISON, true);
 }
 
 /*
 * Backend css and js
 */
-add_action('admin_enqueue_scripts', 'tazapay_enqueue_styles');
-function tazapay_enqueue_styles()
+add_action('admin_enqueue_scripts', 'tcpg_enqueue_styles');
+function tcpg_enqueue_styles()
 {
-    wp_enqueue_style('tazapay_form_css', TAZAPAY_PUBLIC_ASSETS_DIR . 'css/tazapay-form.css', array(), TAZAPAY_CSS_JSS_VERISON, 'all');
-    wp_enqueue_script('tazapay_validate_js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
-    wp_enqueue_script('tazapay-admin', TAZAPAY_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TAZAPAY_CSS_JSS_VERISON, true);
+    wp_enqueue_style('tazapay_form_css', TCPG_PUBLIC_ASSETS_DIR . 'css/tazapay-form.css', array(), TCPG_CSS_JSS_VERISON, 'all');
+    wp_enqueue_script('tazapay_validate_js', TCPG_PUBLIC_ASSETS_DIR . 'js/jquery.validate.min.js', array('jquery'), TCPG_CSS_JSS_VERISON, true);
+    wp_enqueue_script('tazapay-admin', TCPG_PUBLIC_ASSETS_DIR . 'js/tazapay-form.js', array('jquery'), TCPG_CSS_JSS_VERISON, true);
 }
 
 /*
 * Plugin settings page
 */
-add_filter("plugin_action_links_$plugin", 'tazapay_plugin_settings_link');
-function tazapay_plugin_settings_link($links)
+add_filter("plugin_action_links_$plugin", 'tcpg_plugin_settings_link');
+function tcpg_plugin_settings_link($links)
 {
     $settings_link = '<a href="admin.php?page=wc-settings&tab=checkout&section=tz_tazapay">Settings</a>';
     array_unshift($links, $settings_link);
@@ -92,8 +94,8 @@ function tazapay_plugin_settings_link($links)
 /*
  * The class itself, please note that it is inside plugins_loaded action hook
  */
-add_action('plugins_loaded', 'tazapay_init_gateway_class');
-function tazapay_init_gateway_class()
+add_action('plugins_loaded', 'tcpg_init_gateway_class');
+function tcpg_init_gateway_class()
 {
     require 'includes/class-wc-tazapay-payment-gateway.php';
     require 'includes/class-wc-tazapay-user-list-table.php';
@@ -101,21 +103,18 @@ function tazapay_init_gateway_class()
     require 'includes/wc-order-status-change.php';
 
     $woocommerce_tz_tazapay_settings = get_option('woocommerce_tz_tazapay_settings');
-    $tazapay_seller_type            = !empty($woocommerce_tz_tazapay_settings['tazapay_seller_type']) ? $woocommerce_tz_tazapay_settings['tazapay_seller_type'] : '';
+    $tazapay_seller_type             = !empty($woocommerce_tz_tazapay_settings['tazapay_seller_type']) ? $woocommerce_tz_tazapay_settings['tazapay_seller_type'] : '';
 
-    if (!function_exists('is_plugin_active')) {
-        
-        include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+    include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-        if ($tazapay_seller_type == 'multiseller' && is_plugin_active('dokan-lite/dokan.php')) {
-            require 'includes/dokan-add-new-menu.php';
-        }
-        if ($tazapay_seller_type == 'multiseller' && is_plugin_active('wc-vendors/class-wc-vendors.php')) {
-            require 'includes/wcvendors-add-new-menu.php';
-        }
-        if ($tazapay_seller_type == 'multiseller' && is_plugin_active('wc-multivendor-marketplace/wc-multivendor-marketplace.php') && is_plugin_active('wc-frontend-manager/wc_frontend_manager.php')) {
-            require 'includes/wcfm-add-new-menu.php';
-        }
+    if ($tazapay_seller_type == 'multiseller' && is_plugin_active('dokan-lite/dokan.php')) {
+        require 'includes/dokan-add-new-menu.php';
+    }
+    if ($tazapay_seller_type == 'multiseller' && is_plugin_active('wc-vendors/class-wc-vendors.php')) {
+        require 'includes/wcvendors-add-new-menu.php';
+    }
+    if ($tazapay_seller_type == 'multiseller' && is_plugin_active('wc-multivendor-marketplace/wc-multivendor-marketplace.php') && is_plugin_active('wc-frontend-manager/wc_frontend_manager.php')) {
+        require 'includes/wcfm-add-new-menu.php';
     }
 
     load_plugin_textdomain('wc-tp-payment-gateway', false, basename(dirname(__FILE__)) . '/languages/');

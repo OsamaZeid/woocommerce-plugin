@@ -2,7 +2,7 @@
 /*
  * Get escrow status by txn_no
  */
-function tazapay_request_api_order_status($txn_no)
+function tcpg_tcpg_request_api_orderstatus($txn_no)
 {
 
   $woocommerce_tz_tazapay_settings = get_option('woocommerce_tz_tazapay_settings');
@@ -44,46 +44,36 @@ function tazapay_request_api_order_status($txn_no)
   $hmacSHA256 = hash_hmac('sha256', $to_sign, $apiSecret);
   $signature = base64_encode($hmacSHA256);
 
-  $curl = curl_init();
-  curl_setopt_array(
-    $curl,
-    [
-      CURLOPT_URL => $api_url . $APIEndpoint,
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_ENCODING => '',
-      CURLOPT_MAXREDIRS => 10,
-      CURLOPT_TIMEOUT => 0,
-      CURLOPT_FOLLOWLOCATION => true,
-      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-      CURLINFO_HEADER_OUT => true,
-      CURLOPT_SSL_VERIFYPEER => true,
-      CURLOPT_CUSTOMREQUEST => 'GET',
-      CURLOPT_HTTPHEADER => [
-        'accesskey: ' . $apiKey,
-        'salt: ' . $salt,
-        'signature: ' . $signature,
-        'timestamp: ' . $timestamp,
-        'Content-Type: application/json'
-      ],
-    ]
+  $response = wp_remote_post(
+    $api_url . $APIEndpoint,
+    array(
+      'method'      => 'GET',
+      'sslverify'   => false,
+      'headers'     => array(
+        'accesskey' => $apiKey,
+        'salt' => $salt,
+        'signature' => $signature,
+        'timestamp' => $timestamp,
+        'Content-Type' => 'application/json'
+      )
+    )
   );
-  $response = curl_exec($curl);
-
-  $info = curl_getinfo($curl);
-  $header_info = curl_getinfo($curl, CURLINFO_HEADER_OUT);
-
-  $api_array = json_decode($response);
-  curl_close($curl);
+  if (is_wp_error($response)) {
+    $error_message = $response->get_error_message();
+    echo "Something went wrong: $error_message";
+  } else {
+    $api_array = json_decode(wp_remote_retrieve_body($response));
+  }
 
   return $api_array;
 }
 
-if (!wp_next_scheduled('tazapay_order_hook')) {
-  wp_schedule_event(strtotime('12:00:00'), 'daily', 'tazapay_order_hook');
+if (!wp_next_scheduled('tcpg_order_hook')) {
+  wp_schedule_event(strtotime('12:00:00'), 'daily', 'tcpg_order_hook');
 }
 
-add_action('tazapay_order_hook', 'tazapay_order_change', 10, 0);
-function tazapay_order_change()
+add_action('tcpg_order_hook', 'tcpg_order_change', 10, 0);
+function tcpg_order_change()
 {
 
   global $wpdb;
@@ -93,8 +83,8 @@ function tazapay_order_change()
 
     $order           = new WC_Order($orderPost->order_id);
     $paymentMethod   = get_post_meta($orderPost->order_id, '_payment_method', true);
-    $txn_no         = get_post_meta($orderPost->order_id, 'txn_no', true);
-    $getEscrowstate = tazapay_request_api_order_status($txn_no);
+    $txn_no          = get_post_meta($orderPost->order_id, 'txn_no', true);
+    $getEscrowstate  = tcpg_tcpg_request_api_orderstatus($txn_no);
 
     if ($getEscrowstate->status == 'success' && $paymentMethod == 'tz_tazapay' && ($getEscrowstate->data->state == 'Payment_Recieved' || $getEscrowstate->data->sub_state == 'Payment_Done')) {
       $order->update_status('processing');
