@@ -105,7 +105,7 @@ function tcpg_sellerinfo_wcvendors()
 				$partners_customer_id   = sanitize_text_field($_POST['partners_customer_id']);
 				$country                = sanitize_text_field($_POST['country']);
 				$seller_email           = $user_email;
-				$phoneCode              = $apiRequestCall->tcpg_getphonecode($country);
+				$phoneCode              = $apiRequestCall->getPhoneCode($country);
 
 				if ($business_name) {
 					$args = array(
@@ -188,47 +188,50 @@ function tcpg_sellerinfo_wcvendors()
 					}
 					?>
 					<div class="notice notice-error is-dismissible">
-						<p><?php _e($create_user_error_msg, 'wc-tp-payment-gateway'); ?></p>
+						<p><?php esc_html_e($create_user_error_msg, 'wc-tp-payment-gateway'); ?></p>
 					</div>
 			<?php
 				}
 			}
-			echo '<h2>' . __('Create Tazapay Account', 'wc-tp-payment-gateway') . '</h2><hr>';
 			?>
+			<h2>
+				<?php esc_html_e('Create Tazapay Account', 'wc-tp-payment-gateway'); ?>
+			</h2>
+			<hr>
 			<form method="post" name="accountform" action="" class="tazapay_form dokan-form-horizontal">
 				<div class="container">
 					<div class="dokan-form-group">
-						<label for="firstname" class="dokan-w3 dokan-control-label"><b><?php echo __('Ind Bus Type', 'wc-tp-payment-gateway'); ?></b></label>
+						<label for="firstname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Ind Bus Type', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
 							<select id="indbustype" name="indbustype" class="dokan-form-control">
-								<option value=""><?php echo __('Select Type', 'wc-tp-payment-gateway'); ?></option>
-								<option value="Individual"><?php echo __('Individual', 'wc-tp-payment-gateway'); ?></option>
-								<option value="Business"><?php echo __('Business', 'wc-tp-payment-gateway'); ?></option>
+								<option value=""><?php esc_html_e('Select Type', 'wc-tp-payment-gateway'); ?></option>
+								<option value="Individual"><?php esc_html_e('Individual', 'wc-tp-payment-gateway'); ?></option>
+								<option value="Business"><?php esc_html_e('Business', 'wc-tp-payment-gateway'); ?></option>
 							</select>
 						</div>
 					</div>
 					<div id="individual">
 						<div class="dokan-form-group">
-							<label for="firstname" class="dokan-w3 dokan-control-label"><b><?php echo __('First Name', 'wc-tp-payment-gateway'); ?></b></label>
+							<label for="firstname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('First Name', 'wc-tp-payment-gateway'); ?></b></label>
 							<div class="dokan-w5">
 								<input type="text" placeholder="First Name" name="first_name" id="first_name">
 							</div>
 						</div>
 						<div class="dokan-form-group">
-							<label for="lastname" class="dokan-w3 dokan-control-label"><b><?php echo __('Last Name', 'wc-tp-payment-gateway'); ?></b></label>
+							<label for="lastname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Last Name', 'wc-tp-payment-gateway'); ?></b></label>
 							<div class="dokan-w5">
 								<input type="text" placeholder="Last Name" name="last_name" id="last_name">
 							</div>
 						</div>
 					</div>
 					<div id="business" class="dokan-form-group">
-						<label for="businessname" class="dokan-w3 dokan-control-label"><b><?php echo __('Business Name', 'wc-tp-payment-gateway'); ?></b></label>
+						<label for="businessname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Business Name', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
 							<input type="text" placeholder="Business Name" name="business_name" id="business_name">
 						</div>
 					</div>
 					<div class="dokan-form-group">
-						<label for="email" class="dokan-w3 dokan-control-label"><b><?php echo __('E-Mail', 'wc-tp-payment-gateway'); ?></b></label>
+						<label for="email" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('E-Mail', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
 							<?php
 							if ($user_email) {
@@ -242,22 +245,22 @@ function tcpg_sellerinfo_wcvendors()
 						</div>
 					</div>
 					<div class="dokan-form-group">
-						<label for="phonenumber" class="dokan-w3 dokan-control-label"><b><?php echo __('Phone Number', 'wc-tp-payment-gateway'); ?></b></label>
+						<label for="phonenumber" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Phone Number', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
 							<input type="text" placeholder="Phone Number" name="phone_number" id="phone_number">
 						</div>
 					</div>
 					<div class="dokan-form-group">
-						<label for="partnerscustomerid" class="dokan-w3 dokan-control-label"><b><?php echo __('Partners Customer ID', 'wc-tp-payment-gateway'); ?></b></label>
+						<label for="partnerscustomerid" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Partners Customer ID', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
 							<input type="text" placeholder="Partners Customer ID" name="partners_customer_id" id="partners_customer_id">
 						</div>
 					</div>
 					<div class="dokan-form-group">
-						<label for="country" class="dokan-w3 dokan-control-label"><b><?php echo __('Country', 'wc-tp-payment-gateway'); ?></b></label>
+						<label for="country" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Country', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
 							<select id="country" name="country" class="dokan-form-control">
-								<option value=""><?php echo __('Select country', 'wc-tp-payment-gateway'); ?></option>
+								<option value=""><?php esc_html_e('Select country', 'wc-tp-payment-gateway'); ?></option>
 								<?php
 								foreach ($countries as $country_code => $country) {
 								?>
@@ -268,10 +271,10 @@ function tcpg_sellerinfo_wcvendors()
 							</select>
 						</div>
 					</div>
-					<input type="submit" class="registerbtn dokan-btn dokan-btn-danger dokan-btn-theme" name="submit" value="<?php echo __('Submit', 'wc-tp-payment-gateway'); ?>">
+					<input type="submit" class="registerbtn dokan-btn dokan-btn-danger dokan-btn-theme" name="submit" value="<?php esc_html_e('Submit', 'wc-tp-payment-gateway'); ?>">
 				</div>
 			</form>
-		<?php
+			<?php
 		}
 
 		if (!empty($db_account_id)) {
@@ -289,59 +292,64 @@ function tcpg_sellerinfo_wcvendors()
 			$countryName        = WC()->countries->countries[$country_name];
 
 			if ($tazapay_seller_type == 'multiseller' && $tazapay_multi_seller_plugin == 'wc-vendors') {
-				echo '<h2>' . __('Tazapay Account Information', 'wc-tp-payment-gateway') . '</h2><hr>';
+			?>
+				<h2>
+					<?php esc_html_e('Tazapay Account Information', 'wc-tp-payment-gateway'); ?>
+				</h2>
+				<hr>
+			<?php
 			}
-		?>
+			?>
 			<table class="wp-list-table widefat fixed striped table-view-list">
 				<tr>
-					<th><?php echo __('Tazapay Account UUID:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('Tazapay Account UUID:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($db_account_id, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<tr>
-					<th><?php echo __('User Type:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('User Type:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($user_type, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<tr>
-					<th><?php echo __('Entity Type:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('Entity Type:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($ind_bus_type, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<?php if ($business_name) { ?>
 					<tr>
-						<th><?php echo __('Bussiness Name:', 'wc-tp-payment-gateway'); ?></th>
+						<th><?php esc_html_e('Bussiness Name:', 'wc-tp-payment-gateway'); ?></th>
 						<td><?php esc_html_e($business_name, 'wc-tp-payment-gateway'); ?></td>
 					</tr>
 				<?php } else { ?>
 					<tr>
-						<th><?php echo __('First Name:', 'wc-tp-payment-gateway'); ?></th>
+						<th><?php esc_html_e('First Name:', 'wc-tp-payment-gateway'); ?></th>
 						<td><?php esc_html_e($first_name, 'wc-tp-payment-gateway'); ?></td>
 					</tr>
 					<tr>
-						<th><?php echo __('Last Name:', 'wc-tp-payment-gateway'); ?></th>
+						<th><?php esc_html_e('Last Name:', 'wc-tp-payment-gateway'); ?></th>
 						<td><?php esc_html_e($last_name, 'wc-tp-payment-gateway'); ?></td>
 					</tr>
 				<?php } ?>
 				<tr>
-					<th><?php echo __('E-mail:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('E-mail:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<tr>
-					<th><?php echo __('Contact Code:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('Contact Code:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($contact_code, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<tr>
-					<th><?php echo __('Contact Number:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('Contact Number:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($contact_number, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<tr>
-					<th><?php echo __('Country:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('Country:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($countryName, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<tr>
-					<th><?php echo __('Environment:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('Environment:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($environment, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 				<tr>
-					<th><?php echo __('Created At:', 'wc-tp-payment-gateway'); ?></th>
+					<th><?php esc_html_e('Created At:', 'wc-tp-payment-gateway'); ?></th>
 					<td><?php esc_html_e($created, 'wc-tp-payment-gateway'); ?></td>
 				</tr>
 			</table>

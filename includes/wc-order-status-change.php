@@ -60,7 +60,7 @@ function tcpg_tcpg_request_api_orderstatus($txn_no)
   );
   if (is_wp_error($response)) {
     $error_message = $response->get_error_message();
-    echo "Something went wrong: $error_message";
+    esc_html_e('Something went wrong: ' . $error_message, 'wc-tp-payment-gateway');
   } else {
     $api_array = json_decode(wp_remote_retrieve_body($response));
   }

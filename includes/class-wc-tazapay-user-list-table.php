@@ -239,9 +239,9 @@ function tcpg_render_list_page()
 ?>
     <div class="wrap">
         <div id="icon-users" class="icon32"><br /></div>
-        <h2><?php echo __('Tazapay Users', 'wc-tp-payment-gateway'); ?></h2>        
+        <h2><?php esc_html_e('Tazapay Users', 'wc-tp-payment-gateway'); ?></h2>        
         <form id="user-filter" method="get">
-            <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
+            <input type="hidden" name="page" value="<?php esc_html_e($_REQUEST['page'], 'wc-tp-payment-gateway'); ?>" />
             <?php $tazapayListTable->display() ?>
         </form>
     </div>
@@ -273,12 +273,12 @@ function tcpg_render_edit_page()
             }
     ?>
             <div class="wrap">
-                <h2><?php echo __('Edit Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></h2>
+                <h2><?php esc_html_e('Edit Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></h2>
                 <div id="response-message">
                     <?php if (isset($_GET['msg'])) { ?>
                         <div class="notice notice-success">
                             <?php if (sanitize_text_field($_GET['msg']) == 'updated') { ?>
-                                <p><?php echo __('Tazapay Account UUID updated.', 'wc-tp-payment-gateway'); ?></p>
+                                <p><?php esc_html_e('Tazapay Account UUID updated.', 'wc-tp-payment-gateway'); ?></p>
                             <?php } ?>
                         </div>
                     <?php } ?>
@@ -287,14 +287,14 @@ function tcpg_render_edit_page()
                     <form method="post" action="">
                         <table class="form-table">
                             <tr valign="top">
-                                <th scope="row"><label><?php echo __('Tazapay Account UUID', 'package'); ?></label></th>
-                                <td><input type="text" name="account_id" id="account_id" value="<?php esc_html_e( $account_id, 'wc-tp-payment-gateway' ); ?>" placeholder="<?php echo __('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?>" size="50" required />
+                                <th scope="row"><label><?php esc_html_e('Tazapay Account UUID', 'package'); ?></label></th>
+                                <td><input type="text" name="account_id" id="account_id" value="<?php esc_html_e( $account_id, 'wc-tp-payment-gateway' ); ?>" placeholder="<?php esc_html_e('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?>" size="50" required />
                                 </td>
                             </tr>
                             <tr valign="top">
                                 <th scope="row"></th>
                                 <td>
-                                    <input type="submit" name="submit" value="<?php echo __('Update', 'wc-tp-payment-gateway'); ?>" class="button-primary" />
+                                    <input type="submit" name="submit" value="<?php esc_html_e('Update', 'wc-tp-payment-gateway'); ?>" class="button-primary" />
                                 </td>
                             </tr>
                         </table>

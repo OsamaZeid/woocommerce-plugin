@@ -115,7 +115,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
                     'production'  => __('Production', 'wc-tp-payment-gateway'),
                     'sandbox'     => __('Sandbox', 'wc-tp-payment-gateway'),
                 ),
-                'description' => __($text1 . '<br><br><a href="' . $signupurl . '" class="tz-signupurl button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">' . $text2 . '</a><p class="description signup-help-text">' . $text3 . '</p>', 'wc-tp-payment-gateway'),
+                'description' => __($text1 . '<br><br><a href="' . esc_url($signupurl) . '" class="tz-signupurl button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">' . $text2 . '</a><p class="description signup-help-text">' . $text3 . '</p>', 'wc-tp-payment-gateway'),
                 'default'     => 'production',
                 'class'       => ''
             ),
@@ -192,9 +192,9 @@ class TCPG_Gateway extends WC_Payment_Gateway
         } else {
             foreach ($getuserapi->errors as $key => $error) {
                 if (isset($error->message)) {
-            ?>
+?>
                     <div class="notice notice-error is-dismissible">
-                        <p><?php echo $error->message; ?></p>
+                        <p><?php esc_html_e($error->message, 'wc-tp-payment-gateway'); ?></p>
                     </div>
             <?php
                 }
@@ -522,7 +522,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();
-            echo "Something went wrong: $error_message";
+            esc_html_e('Something went wrong: ' . $error_message, 'wc-tp-payment-gateway');
         } else {
 
             $upload_dir = wp_upload_dir();
@@ -597,7 +597,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         );
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();
-            echo "Something went wrong: $error_message";
+            esc_html_e('Something went wrong: ' . $error_message, 'wc-tp-payment-gateway');
         } else {
             $api_array = json_decode(wp_remote_retrieve_body($response));
         }
@@ -658,7 +658,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         );
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();
-            echo "Something went wrong: $error_message";
+            esc_html_e('Something went wrong: ' . $error_message, 'wc-tp-payment-gateway');
         } else {
             $api_array = json_decode(wp_remote_retrieve_body($response));
         }
@@ -719,11 +719,11 @@ class TCPG_Gateway extends WC_Payment_Gateway
         );
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();
-            echo "Something went wrong: $error_message";
+            esc_html_e('Something went wrong: ' . $error_message, 'wc-tp-payment-gateway');
         } else {
             $api_array = json_decode(wp_remote_retrieve_body($response));
         }
-        
+
         return $api_array;
     }
 
@@ -780,11 +780,11 @@ class TCPG_Gateway extends WC_Payment_Gateway
         );
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();
-            echo "Something went wrong: $error_message";
+            esc_html_e('Something went wrong: ' . $error_message, 'wc-tp-payment-gateway');
         } else {
             $api_array = json_decode(wp_remote_retrieve_body($response));
         }
-        
+
         return $api_array;
     }
 
@@ -1074,7 +1074,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         global $wpdb;
 
         $table_perfixed = $wpdb->prefix . 'comments';
-        $results = $wpdb->get_results("SELECT * FROM $table_perfixed WHERE  `comment_post_ID` = $order_id AND  `comment_type` LIKE  'order_note'");
+        $results = $wpdb->get_results("SELECT * FROM $table_perfixed WHERE  `comment_post_ID` = $order_id AND `comment_type` LIKE  'order_note'");
 
         foreach ($results as $note) {
             $order_note[]  = array(
@@ -1102,30 +1102,31 @@ class TCPG_Gateway extends WC_Payment_Gateway
             $tablename      = $wpdb->prefix . 'tazapay_user';
 
             ?>
-            <h2><?php echo __('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
-            <p><?php echo __('Pay Now, Release Later powered by Tazapay', 'wc-tp-payment-gateway'); ?></p>
+            <h2><?php esc_html_e('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
+            <p><?php esc_html_e('Pay Now, Release Later powered by Tazapay', 'wc-tp-payment-gateway'); ?></p>
             <table class="woocommerce-table shop_table gift_info">
                 <tfoot>
                     <tr>
-                        <th scope="row"><?php echo __('Tazapay Payer E-Mail', 'wc-tp-payment-gateway'); ?></th>
-                        <td><?php echo $user_email; ?></td>
+                        <th scope="row"><?php esc_html_e('Tazapay Payer E-Mail', 'wc-tp-payment-gateway'); ?></th>
+                        <td><?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?></td>
                     </tr>
                     <?php if ($txn_no) { ?>
                         <tr>
-                            <th scope="row"><?php echo __('Transaction no', 'wc-tp-payment-gateway'); ?></th>
-                            <td><?php echo $txn_no; ?></td>
+                            <th scope="row"><?php esc_html_e('Transaction no', 'wc-tp-payment-gateway'); ?></th>
+                            <td><?php esc_html_e($txn_no, 'wc-tp-payment-gateway'); ?></td>
                         </tr>
                     <?php } ?>
                     <tr>
-                        <th scope="row"><?php echo __('Payment status', 'wc-tp-payment-gateway'); ?></th>
+                        <th scope="row"><?php esc_html_e('Payment status', 'wc-tp-payment-gateway'); ?></th>
                         <td>
                             <?php
                             $getEscrowstate = $this->tcpg_request_api_orderstatus($txn_no);
 
                             if (isset($_POST['order-status']) && !empty($getEscrowstate->data->state) && !empty($getEscrowstate->data->sub_state)) {
-
-                                echo '<p><strong>Escrow state:</strong> ' . $getEscrowstate->data->state . '</p>';
-                                echo '<p><strong>Escrow sub_state:</strong> ' . $getEscrowstate->data->sub_state . '</p>';
+                            ?>
+                                <p><strong><?php esc_html_e('Escrow state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->state, 'wc-tp-payment-gateway'); ?></p>
+                                <p><strong><?php esc_html_e('Escrow sub_state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->sub_state, 'wc-tp-payment-gateway'); ?></p>
+                            <?php
                             }
                             ?>
                             <form method="post" name="tazapay-order-status" action="">
@@ -1138,10 +1139,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
                                 $order->update_status('processing');
 
                                 if ($getEscrowstate->data->state == 'Payment_Received') {
-                                    echo __('Completed', 'wc-tp-payment-gateway');
+                                    esc_html_e('Completed', 'wc-tp-payment-gateway');
                                 }
                                 if ($getEscrowstate->data->sub_state == 'Payment_Done') {
-                                    echo __('Completed', 'wc-tp-payment-gateway');
+                                    esc_html_e('Completed', 'wc-tp-payment-gateway');
                                 }
                             } else {
                                 printf('<a class="woocommerce-button button pay" href="%s">%s</a>', $redirect_url, __("Pay With Escrow", "wc-tp-payment-gateway"));
@@ -1160,7 +1161,9 @@ class TCPG_Gateway extends WC_Payment_Gateway
                     $note_date = $note['note_date'];
                     $note_author = $note['note_author'];
                     $note_content = $note['note_content'];
-                    echo '<p><strong>' . date('F j, Y h:i A', strtotime($note_date)) . '</strong> ' . $note_content . '</p>';
+                    ?>
+                    <p><strong><?php esc_html_e(date('F j, Y h:i A', strtotime($note_date)), 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($note_content, 'wc-tp-payment-gateway'); ?></p>
+                    <?php
                 }
             }
         }
@@ -1263,21 +1266,22 @@ class TCPG_Gateway extends WC_Payment_Gateway
         if (isset($account_id) && !empty($account_id)) {
             ?>
             <br class="clear" />
-            <h3><?php echo __('Transaction Details', 'wc-tp-payment-gateway'); ?></h3>
+            <h3><?php esc_html_e('Transaction Details', 'wc-tp-payment-gateway'); ?></h3>
 
             <div class="address">
-                <p><strong><?php echo __('TazaPay Account UUID:', 'wc-tp-payment-gateway'); ?></strong> <?php echo $account_id ?></p>
-                <p><strong><?php echo __('Transaction no:', 'wc-tp-payment-gateway'); ?></strong> <?php echo $txn_no ?></p>
+                <p><strong><?php esc_html_e('TazaPay Account UUID: ', 'wc-tp-payment-gateway'); ?></strong> <?php esc_html_e($account_id, 'wc-tp-payment-gateway'); ?></p>
+                <p><strong><?php esc_html_e('Transaction no: ', 'wc-tp-payment-gateway'); ?></strong> <?php esc_html_e($txn_no, 'wc-tp-payment-gateway'); ?></p>
                 <?php
                 $getEscrowstate = $this->tcpg_request_api_orderstatus($txn_no);
 
                 if (isset($_GET['order-status']) && !empty($getEscrowstate->data->state) && !empty($getEscrowstate->data->sub_state)) {
-
-                    echo '<p><strong>Escrow state:</strong> ' . $getEscrowstate->data->state . '</p>';
-                    echo '<p><strong>Escrow sub_state:</strong> ' . $getEscrowstate->data->sub_state . '</p>';
+                ?>
+                    <p><strong><?php esc_html_e('Escrow state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->state, 'wc-tp-payment-gateway'); ?></p>
+                    <p><strong><?php esc_html_e('Escrow sub_state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->sub_state, 'wc-tp-payment-gateway'); ?></p>
+                <?php
                 }
                 ?>
-                <a href="<?php echo $order->get_edit_order_url(); ?>&order-status=true" class="order-status-response button button-primary"><?php echo __('Refresh Status', 'wc-tp-payment-gateway'); ?></a>
+                <a href="<?php echo esc_url($order->get_edit_order_url(), 'wc-tp-payment-gateway'); ?>&order-status=true" class="order-status-response button button-primary"><?php esc_html_e('Refresh Status', 'wc-tp-payment-gateway'); ?></a>
             </div>
     <?php
         }
@@ -1297,7 +1301,7 @@ function tcpg_custom_checkout_js_script()
             if (typeof wc_checkout_params === 'undefined')
                 return false;
 
-            var field = '[name="<?php echo $field_key; ?>"]';
+            var field = '[name="<?php esc_html_e($field_key, 'wc-tp-payment-gateway'); ?>"]';
 
             $('form.checkout').on('input change', field, function() {
                 $.ajax({
@@ -1305,7 +1309,7 @@ function tcpg_custom_checkout_js_script()
                     url: wc_checkout_params.ajax_url,
                     data: {
                         'action': 'targeted_checkout_field_change',
-                        'field_key': '<?php echo $field_key; ?>',
+                        'field_key': '<?php esc_html_e($field_key, 'wc-tp-payment-gateway'); ?>',
                         'field_value': $(this).val(),
                     },
                     success: function(result) {
@@ -1508,10 +1512,13 @@ function tcpg_orders_list_column_content($column, $post_id)
 
                 $tcpg_request_api_orderstatus = new TCPG_Gateway();
                 $getEscrowstate = $tcpg_request_api_orderstatus->tcpg_request_api_orderstatus($txn_no);
-                echo '<small><em><b>Escrow state:</b> ' . $getEscrowstate->data->state . '</em></small><br>';
-                echo '<small><em><b>Escrow sub_state:</b> ' . $getEscrowstate->data->sub_state . '</em></small>';
+    ?>
+                <p><strong><?php esc_html_e('Escrow state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->state, 'wc-tp-payment-gateway'); ?></p>
+                <p><strong><?php esc_html_e('Escrow sub_state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->sub_state, 'wc-tp-payment-gateway'); ?></p>
+        <?php
+
             } else {
-                echo $payment_title;
+                esc_html_e($payment_title, 'wc-tp-payment-gateway');
             }
             break;
     }
@@ -1534,31 +1541,32 @@ function tcpg_view_order_page($order_id)
         global $wpdb;
         $tablename      = $wpdb->prefix . 'tazapay_user';
 
-    ?>
-        <h2><?php echo __('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
-        <p><?php echo __('Pay Now, Release Later powered by Tazapay', 'wc-tp-payment-gateway'); ?></p>
+        ?>
+        <h2><?php esc_html_e('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
+        <p><?php esc_html_e('Pay Now, Release Later powered by Tazapay', 'wc-tp-payment-gateway'); ?></p>
         <table class="woocommerce-table shop_table gift_info">
             <tfoot>
                 <tr>
-                    <th scope="row"><?php echo __('Tazapay Payer E-Mail', 'wc-tp-payment-gateway'); ?></th>
-                    <td><?php echo $user_email; ?></td>
+                    <th scope="row"><?php esc_html_e('Tazapay Payer E-Mail', 'wc-tp-payment-gateway'); ?></th>
+                    <td><?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?></td>
                 </tr>
                 <?php if ($txn_no) { ?>
                     <tr>
-                        <th scope="row"><?php echo __('Transaction no', 'wc-tp-payment-gateway'); ?></th>
-                        <td><?php echo $txn_no; ?></td>
+                        <th scope="row"><?php esc_html_e('Transaction no', 'wc-tp-payment-gateway'); ?></th>
+                        <td><?php esc_html_e($txn_no, 'wc-tp-payment-gateway'); ?></td>
                     </tr>
                 <?php } ?>
                 <tr>
-                    <th scope="row"><?php echo __('Payment status', 'wc-tp-payment-gateway'); ?></th>
+                    <th scope="row"><?php esc_html_e('Payment status', 'wc-tp-payment-gateway'); ?></th>
                     <td>
                         <?php
                         $getEscrowstate = $request_api_call->tcpg_request_api_orderstatus($txn_no);
 
                         if (isset($_POST['order-status']) && !empty($getEscrowstate->data->state) && !empty($getEscrowstate->data->sub_state)) {
-
-                            echo '<p><strong>Escrow state:</strong> ' . $getEscrowstate->data->state . '</p>';
-                            echo '<p><strong>Escrow sub_state:</strong> ' . $getEscrowstate->data->sub_state . '</p>';
+                        ?>
+                            <p><strong><?php esc_html_e('Escrow state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->state, 'wc-tp-payment-gateway'); ?></p>
+                            <p><strong><?php esc_html_e('Escrow sub_state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->sub_state, 'wc-tp-payment-gateway'); ?></p>
+                        <?php
                         }
                         ?>
                         <form method="post" name="tazapay-order-status" action="">
@@ -1570,10 +1578,10 @@ function tcpg_view_order_page($order_id)
                             $order->update_status('processing');
 
                             if ($getEscrowstate->data->state == 'Payment_Received') {
-                                echo __('Completed', 'wc-tp-payment-gateway');
+                                esc_html_e('Completed', 'wc-tp-payment-gateway');
                             }
                             if ($getEscrowstate->data->sub_state == 'Payment_Done') {
-                                echo __('Completed', 'wc-tp-payment-gateway');
+                                esc_html_e('Completed', 'wc-tp-payment-gateway');
                             }
                         } else {
 
@@ -1584,7 +1592,7 @@ function tcpg_view_order_page($order_id)
                 </tr>
             </tfoot>
         </table>
-<?php
+        <?php
 
         $order_notes = $request_api_call->tcpg_get_private_order_notes($order_id);
         if (isset($order_notes) && count($order_notes) > 1) {
@@ -1593,7 +1601,9 @@ function tcpg_view_order_page($order_id)
                 $note_date = $note['note_date'];
                 $note_author = $note['note_author'];
                 $note_content = $note['note_content'];
-                echo '<p><strong>' . date('F j, Y h:i A', strtotime($note_date)) . '</strong> ' . $note_content . '</p>';
+        ?>
+                <p><strong><?php esc_html_e(date('F j, Y h:i A', strtotime($note_date)), 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($note_content, 'wc-tp-payment-gateway'); ?></p>
+        <?php
             }
         }
     }
