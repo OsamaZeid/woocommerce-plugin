@@ -38,7 +38,6 @@ function tcpg_user_install()
         country varchar(255) NOT NULL,
         ind_bus_type varchar(255) NOT NULL,
         business_name varchar(255) NOT NULL,
-        partners_customer_id varchar(255) NOT NULL,
         environment varchar(255) NOT NULL,
         created varchar(255) NOT NULL,
         PRIMARY KEY  (id)
@@ -103,7 +102,7 @@ function tcpg_init_gateway_class()
     require 'includes/wc-order-status-change.php';
 
     $woocommerce_tz_tazapay_settings = get_option('woocommerce_tz_tazapay_settings');
-    $tazapay_seller_type             = !empty($woocommerce_tz_tazapay_settings['tazapay_seller_type']) ? $woocommerce_tz_tazapay_settings['tazapay_seller_type'] : '';
+    $tazapay_seller_type             = !empty($woocommerce_tz_tazapay_settings['tazapay_seller_type']) ? esc_html($woocommerce_tz_tazapay_settings['tazapay_seller_type']) : '';
 
     include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 

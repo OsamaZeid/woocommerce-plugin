@@ -40,29 +40,29 @@ function tcpg_sellerinfo_wcvendors()
 		$countries_obj          = new WC_Countries();
 		$countries              = $countries_obj->__get('countries');
 
-		$woocommerce_tz_tazapay_settings    = get_option('woocommerce_tz_tazapay_settings');
-		$sandboxmode                        = $woocommerce_tz_tazapay_settings['sandboxmode'];
-		$tazapay_seller_type                = $woocommerce_tz_tazapay_settings['tazapay_seller_type'];
-		$tazapay_multi_seller_plugin        = $woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin'];
+		$woocommerce_tz_tazapay_settings  = get_option('woocommerce_tz_tazapay_settings');
+		$sandboxmode                      = esc_html($woocommerce_tz_tazapay_settings['sandboxmode']);
+		$tazapay_seller_type              = esc_html($woocommerce_tz_tazapay_settings['tazapay_seller_type']);
+		$tazapay_multi_seller_plugin      = esc_html($woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin']);
 
 		if ($sandboxmode == 'sandbox') {
-			$api_url      = 'https://api-sandbox.tazapay.com';
-			$environment  = 'sandbox';
+			$api_url     = esc_url('https://api-sandbox.tazapay.com');
+			$environment = 'sandbox';
 		} else {
-			$api_url = 'https://api.tazapay.com';
-			$environment  = 'production';
+			$api_url     = esc_url('https://api.tazapay.com');
+			$environment = 'production';
 		}
 
 		if (is_user_logged_in() && $tazapay_seller_type == 'multiseller' && is_admin()) {
 			$seller_user    = get_userdata(get_current_user_id());
-			$user_email     = $seller_user->user_email;
+			$user_email     = sanitize_email($seller_user->user_email);
 		} else {
-			$user_email     = $woocommerce_tz_tazapay_settings['seller_email'];
+			$user_email     = sanitize_email($woocommerce_tz_tazapay_settings['seller_email']);
 		}
 
 		$tablename      = $wpdb->prefix . 'tazapay_user';
 		$seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $user_email . "' AND environment = '" . $environment . "'");
-		$db_account_id  = isset($seller_results[0]->account_id) ? $seller_results[0]->account_id : '';
+		$db_account_id  = isset($seller_results[0]->account_id) ? esc_html($seller_results[0]->account_id) : '';
 		$apiRequestCall = new TCPG_Gateway();
 		$getuserapi 	= $apiRequestCall->tcpg_request_api_getuser($user_email);
 
@@ -102,7 +102,6 @@ function tcpg_sellerinfo_wcvendors()
 				$last_name              = sanitize_text_field($_POST['last_name']);
 				$business_name          = sanitize_text_field($_POST['business_name']);
 				$phone_number           = sanitize_text_field($_POST['phone_number']);
-				$partners_customer_id   = sanitize_text_field($_POST['partners_customer_id']);
 				$country                = sanitize_text_field($_POST['country']);
 				$seller_email           = $user_email;
 				$phoneCode              = $apiRequestCall->getPhoneCode($country);
@@ -114,8 +113,7 @@ function tcpg_sellerinfo_wcvendors()
 						"contact_code"          => $phoneCode,
 						"contact_number"        => $phone_number,
 						"ind_bus_type"          => $indbustype,
-						"business_name"         => $business_name,
-						"partners_customer_id"  => $partners_customer_id
+						"business_name"         => $business_name
 					);
 				} else {
 					$args = array(
@@ -125,8 +123,7 @@ function tcpg_sellerinfo_wcvendors()
 						"contact_code"          => $phoneCode,
 						"contact_number"        => $phone_number,
 						"country"               => $country,
-						"ind_bus_type"          => $indbustype,
-						"partners_customer_id"  => $partners_customer_id
+						"ind_bus_type"          => $indbustype
 					);
 				}
 
@@ -153,16 +150,15 @@ function tcpg_sellerinfo_wcvendors()
 							'country'              => $country,
 							'ind_bus_type'         => $indbustype,
 							'business_name'        => $business_name,
-							'partners_customer_id' => $partners_customer_id,
 							'environment'          => $environment,
 							'created'              => current_time('mysql')
 						),
-						array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+						array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
 					);
 
 		?>
 					<div class="notice notice-success is-dismissible">
-						<p><?php _e($createUser->message, 'wc-tp-payment-gateway'); ?></p>
+						<p><?php esc_html_e($createUser->message, 'wc-tp-payment-gateway'); ?></p>
 					</div>
 					<?php
 					if (is_admin()) {
@@ -172,18 +168,18 @@ function tcpg_sellerinfo_wcvendors()
 				} else {
 
 					$create_user_error_msg = "";
-					$create_user_error_msg = "Create Tazapay User Error: " . $createUser->message;
+					$create_user_error_msg = "Create Tazapay User Error: " . esc_html($createUser->message);
 
 					foreach ($createUser->errors as $key => $error) {
 
 						if (isset($error->code)) {
-							$create_user_error_msg .= "code: " . $error->code . '<br>';
+							$create_user_error_msg .= "code: " . esc_html($error->code) . '<br>';
 						}
 						if (isset($error->message)) {
-							$create_user_error_msg .= "Message: " . $error->message . '<br>';
+							$create_user_error_msg .= "Message: " . esc_html($error->message) . '<br>';
 						}
 						if (isset($error->remarks)) {
-							$create_user_error_msg .= "Remarks: " . $error->remarks . '<br>';
+							$create_user_error_msg .= "Remarks: " . esc_html($error->remarks) . '<br>';
 						}
 					}
 					?>
@@ -214,31 +210,31 @@ function tcpg_sellerinfo_wcvendors()
 						<div class="dokan-form-group">
 							<label for="firstname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('First Name', 'wc-tp-payment-gateway'); ?></b></label>
 							<div class="dokan-w5">
-								<input type="text" placeholder="First Name" name="first_name" id="first_name">
+								<input type="text" placeholder="<?php echo esc_html( __( 'First Name', 'wc-tp-payment-gateway' ) ); ?>" name="first_name" id="first_name">
 							</div>
 						</div>
 						<div class="dokan-form-group">
 							<label for="lastname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Last Name', 'wc-tp-payment-gateway'); ?></b></label>
 							<div class="dokan-w5">
-								<input type="text" placeholder="Last Name" name="last_name" id="last_name">
+								<input type="text" placeholder="<?php echo esc_html( __( 'Last Name', 'wc-tp-payment-gateway' ) ); ?>" name="last_name" id="last_name">
 							</div>
 						</div>
 					</div>
 					<div id="business" class="dokan-form-group">
 						<label for="businessname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Business Name', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
-							<input type="text" placeholder="Business Name" name="business_name" id="business_name">
+							<input type="text" placeholder="<?php echo esc_html( __( 'Business Name', 'wc-tp-payment-gateway' ) ); ?>" name="business_name" id="business_name">
 						</div>
 					</div>
 					<div class="dokan-form-group">
 						<label for="email" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('E-Mail', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
 							<?php
-							if ($user_email) {
+							if (esc_html($user_email)) {
 							?>
-								<input type="text" placeholder="Enter Email" name="email" id="email" value="<?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?>" readonly disabled>
+								<input type="text" placeholder="<?php echo esc_html( __( 'Enter Email', 'wc-tp-payment-gateway' ) ); ?>" name="email" id="email" value="<?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?>" readonly disabled>
 							<?php } else { ?>
-								<input type="text" placeholder="Enter Email" name="email" id="email">
+								<input type="text" placeholder="<?php echo esc_html( __( 'Enter Email', 'wc-tp-payment-gateway' ) ); ?>" name="email" id="email">
 							<?php
 							}
 							?>
@@ -247,13 +243,7 @@ function tcpg_sellerinfo_wcvendors()
 					<div class="dokan-form-group">
 						<label for="phonenumber" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Phone Number', 'wc-tp-payment-gateway'); ?></b></label>
 						<div class="dokan-w5">
-							<input type="text" placeholder="Phone Number" name="phone_number" id="phone_number">
-						</div>
-					</div>
-					<div class="dokan-form-group">
-						<label for="partnerscustomerid" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Partners Customer ID', 'wc-tp-payment-gateway'); ?></b></label>
-						<div class="dokan-w5">
-							<input type="text" placeholder="Partners Customer ID" name="partners_customer_id" id="partners_customer_id">
+							<input type="text" placeholder="<?php echo esc_html( __( 'Phone Number', 'wc-tp-payment-gateway' ) ); ?>" name="phone_number" id="phone_number">
 						</div>
 					</div>
 					<div class="dokan-form-group">

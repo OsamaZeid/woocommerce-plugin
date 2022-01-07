@@ -20,13 +20,13 @@ function tcpg_tcpg_request_api_orderstatus($txn_no)
   $method = "GET";
   $APIEndpoint = "/v1/escrow/" . $txn_no;
   $timestamp = time();
-  $apiKey     = $woocommerce_tz_tazapay_settings['sandboxmode'] ? $woocommerce_tz_tazapay_settings['sandbox_api_key'] : $woocommerce_tz_tazapay_settings['live_api_key'];
-  $apiSecret  = $woocommerce_tz_tazapay_settings['sandboxmode'] ? $woocommerce_tz_tazapay_settings['sandbox_api_secret_key'] : $woocommerce_tz_tazapay_settings['live_api_secret_key'];
+  $apiKey     = $woocommerce_tz_tazapay_settings['sandboxmode'] ? esc_html($woocommerce_tz_tazapay_settings['sandbox_api_key']) : esc_html($woocommerce_tz_tazapay_settings['live_api_key']);
+  $apiSecret  = $woocommerce_tz_tazapay_settings['sandboxmode'] ? esc_html($woocommerce_tz_tazapay_settings['sandbox_api_secret_key']) : esc_html($woocommerce_tz_tazapay_settings['live_api_secret_key']);
 
   if ($woocommerce_tz_tazapay_settings['sandboxmode'] == 'sandbox') {
-    $api_url = 'https://api-sandbox.tazapay.com';
+    $api_url = esc_url('https://api-sandbox.tazapay.com');
   } else {
-    $api_url = 'https://api.tazapay.com';
+    $api_url = esc_url('https://api.tazapay.com');
   }
 
   /*
@@ -42,7 +42,7 @@ function tcpg_tcpg_request_api_orderstatus($txn_no)
   * in document: signature = Base64(hmacSHA256(to_sign, API-Secret))
   */
   $hmacSHA256 = hash_hmac('sha256', $to_sign, $apiSecret);
-  $signature = base64_encode($hmacSHA256);
+  $signature  = base64_encode($hmacSHA256);
 
   $response = wp_remote_post(
     $api_url . $APIEndpoint,
@@ -75,7 +75,6 @@ if (!wp_next_scheduled('tcpg_order_hook')) {
 add_action('tcpg_order_hook', 'tcpg_order_change', 10, 0);
 function tcpg_order_change()
 {
-
   global $wpdb;
   $orderList = $wpdb->get_results("SELECT pm.post_id AS order_id FROM {$wpdb->prefix}postmeta AS pm LEFT JOIN {$wpdb->prefix}posts AS p ON pm.post_id = p.ID WHERE p.post_type = 'shop_order' AND p.post_status = 'wc-on-hold' AND pm.meta_key = '_payment_method'");
 

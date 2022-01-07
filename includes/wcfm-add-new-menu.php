@@ -8,7 +8,7 @@ function tcpg_query_vars($query_vars)
 	$wcfm_modified_endpoints = (array) get_option('wcfm_endpoints');
 
 	$query_custom_menus_vars = array(
-		'tazapay-information' => !empty($wcfm_modified_endpoints['tazapay-information']) ? $wcfm_modified_endpoints['tazapay-information'] : 'tazapayinformation',
+		'tazapay-information' => !empty($wcfm_modified_endpoints['tazapay-information']) ? esc_html($wcfm_modified_endpoints['tazapay-information']) : 'tazapayinformation',
 	);
 
 	$query_vars = array_merge($query_vars, $query_custom_menus_vars);
@@ -82,8 +82,8 @@ function tcpg_wcfm_menus($menus)
 
 	$menus['tazapay-information'] = array(
 		'label' => __('Tazapay Information', 'wc-tp-payment-gateway'),
-		'url' => get_wcfm_custom_menus_url('tazapayinformation'),
-		'icon' => 'cubes'
+		'url'   => get_wcfm_custom_menus_url('tazapayinformation'),
+		'icon'  => 'cubes'
 	);
 	return $menus;
 }

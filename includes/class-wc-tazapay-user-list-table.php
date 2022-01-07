@@ -27,9 +27,7 @@ class TCPG_User_List_Table extends WP_List_Table
     {
         global $wpdb;
 
-        $data = array();
-        $userArray = array();
-
+        $data      = array();
         $tablename = $wpdb->prefix . 'tazapay_user';
         $results   = $wpdb->get_results("SELECT * FROM $tablename");
 
@@ -184,9 +182,10 @@ class TCPG_User_List_Table extends WP_List_Table
 
         function usort_reorder($a, $b)
         {
-            $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'id';
-            $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC';
-            $result = strnatcmp($a[$orderby], $b[$orderby]);
+            $orderby = !empty($_REQUEST['orderby']) ? esc_html($_REQUEST['orderby']) : 'id';
+            $order   = !empty($_REQUEST['order']) ? esc_html($_REQUEST['order']) : 'DESC';
+            $result  = strnatcmp($a[$orderby], $b[$orderby]);
+            
             return ($order === 'asc') ? $result : -$result;
         }
         usort($data, 'usort_reorder');
@@ -210,7 +209,7 @@ class TCPG_User_List_Table extends WP_List_Table
 function tcpg_add_menu_items()
 {
     $woocommerce_tz_tazapay_settings = get_option('woocommerce_tz_tazapay_settings');
-    $tazapay_payment_method          = !empty($woocommerce_tz_tazapay_settings['enabled']) ? $woocommerce_tz_tazapay_settings['enabled'] : '';
+    $tazapay_payment_method          = !empty($woocommerce_tz_tazapay_settings['enabled']) ? esc_html($woocommerce_tz_tazapay_settings['enabled']) : '';
 
     if ($tazapay_payment_method == 'yes') {
         add_submenu_page('woocommerce', __('Tazapay Users', 'wc-tp-payment-gateway'), __('Tazapay Users', 'wc-tp-payment-gateway'), 'manage_options', 'tazapay-user', 'tcpg_render_list_page');
@@ -257,27 +256,24 @@ function tcpg_render_edit_page()
     $tablename  = $wpdb->prefix . 'tazapay_user';
     $row_user   = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
-    if ('edit' === $_REQUEST['action']) {
+    if ('edit' === esc_html($_REQUEST['action'])) {
         $row_user = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
         if (count(array($row_user)) > 0) {
             $account_id = $row_user->account_id;
 
             if (isset($_POST['submit'])) {
-
                 $new_value = sanitize_text_field($_POST['account_id']);
-
                 $wpdb->query($wpdb->prepare("UPDATE $tablename SET account_id = %s WHERE ID = %s", $new_value, $user_id));
-
-                $_GET['msg'] = 'updated';
+                $success = true;
             }
     ?>
             <div class="wrap">
                 <h2><?php esc_html_e('Edit Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></h2>
                 <div id="response-message">
-                    <?php if (isset($_GET['msg'])) { ?>
+                    <?php if (isset($success)) { ?>
                         <div class="notice notice-success">
-                            <?php if (sanitize_text_field($_GET['msg']) == 'updated') { ?>
+                            <?php if ($success == true) { ?>
                                 <p><?php esc_html_e('Tazapay Account UUID updated.', 'wc-tp-payment-gateway'); ?></p>
                             <?php } ?>
                         </div>
@@ -287,7 +283,7 @@ function tcpg_render_edit_page()
                     <form method="post" action="">
                         <table class="form-table">
                             <tr valign="top">
-                                <th scope="row"><label><?php esc_html_e('Tazapay Account UUID', 'package'); ?></label></th>
+                                <th scope="row"><label><?php esc_html_e('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></label></th>
                                 <td><input type="text" name="account_id" id="account_id" value="<?php esc_html_e( $account_id, 'wc-tp-payment-gateway' ); ?>" placeholder="<?php esc_html_e('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?>" size="50" required />
                                 </td>
                             </tr>

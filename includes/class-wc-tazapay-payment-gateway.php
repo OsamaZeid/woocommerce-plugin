@@ -41,10 +41,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $this->live_api_secret_key          = $this->sandboxmode ? $this->get_option('sandbox_api_secret_key') : $this->get_option('live_api_secret_key');
 
         if ($this->sandboxmode == 'sandbox') {
-            $this->base_api_url = 'https://api-sandbox.tazapay.com';
+            $this->base_api_url = esc_url('https://api-sandbox.tazapay.com');
             $this->environment  = 'sandbox';
         } else {
-            $this->base_api_url = 'https://api.tazapay.com';
+            $this->base_api_url = esc_url('https://api.tazapay.com');
             $this->environment  = 'production';
         }
 
@@ -75,10 +75,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
         if ($this->get_option('sandboxmode') === 'sandbox') {
             $text3          = __('Request Sandbox credentials for accepting payments via Tazapay. Signup now and go to \'Request API Key\'', 'wc-tp-payment-gateway');
-            $signupurl      = 'https://sandbox.tazapay.com/signup';
+            $signupurl      = esc_url('https://sandbox.tazapay.com/signup');
         } else {
-            $text3        = __('Request Production credentials for accepting payments via Tazapay. Signup now and go to \'Request API Key\'', 'wc-tp-payment-gateway');
-            $signupurl      = 'https://app.tazapay.com/signup';
+            $text3          = __('Request Production credentials for accepting payments via Tazapay. Signup now and go to \'Request API Key\'', 'wc-tp-payment-gateway');
+            $signupurl      = esc_url('https://app.tazapay.com/signup');
         }
 
         if (is_plugin_active('dokan-lite/dokan.php')) {
@@ -115,7 +115,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
                     'production'  => __('Production', 'wc-tp-payment-gateway'),
                     'sandbox'     => __('Sandbox', 'wc-tp-payment-gateway'),
                 ),
-                'description' => __($text1 . '<br><br><a href="' . esc_url($signupurl) . '" class="tz-signupurl button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">' . $text2 . '</a><p class="description signup-help-text">' . $text3 . '</p>', 'wc-tp-payment-gateway'),
+                'description' => __($text1 . '<br><br><a href="' . $signupurl . '" class="tz-signupurl button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">' . $text2 . '</a><p class="description signup-help-text">' . $text3 . '</p>', 'wc-tp-payment-gateway'),
                 'default'     => 'production',
                 'class'       => ''
             ),
@@ -185,9 +185,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $getuserapi = $this->tcpg_request_api_getuser($this->get_option('seller_email'));
 
         if (!empty($getuserapi->data->id)) {
-            $seller_account_id = $getuserapi->data->id;
+            $seller_account_id                            = $getuserapi->data->id;
             $woocommerce_tz_tazapay_settings              = get_option('woocommerce_tz_tazapay_settings');
             $woocommerce_tz_tazapay_settings['seller_id'] = $seller_account_id;
+            
             update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
         } else {
             foreach ($getuserapi->errors as $key => $error) {
@@ -525,9 +526,9 @@ class TCPG_Gateway extends WC_Payment_Gateway
             esc_html_e('Something went wrong: ' . $error_message, 'wc-tp-payment-gateway');
         } else {
 
-            $upload_dir = wp_upload_dir();
-            $filename = $upload_dir['basedir'] . '/tazapay_payment_log.txt';
-            $responsetxt = 'Oder Id:' . $order_id . '-' . wp_remote_retrieve_body($response) . "\n";
+            $upload_dir     = wp_upload_dir();
+            $filename       = $upload_dir['basedir'] .'/'.sanitize_file_name('[tazapay_payment_log],.txt');
+            $responsetxt    = 'Oder Id:' . esc_html($order_id) . '-' . wp_remote_retrieve_body($response) . "\n";
 
             if (file_exists($filename)) {
                 $handle = fopen($filename, 'a') or die('Cannot open file:  ' . $filename);
@@ -809,14 +810,14 @@ class TCPG_Gateway extends WC_Payment_Gateway
                 $product_id         = $cart_item['data']->get_id();
                 $vendor_id          = get_post_field('post_author', $product_id);
                 $vendor             = get_userdata($vendor_id);
-                $seller_email[]     = $vendor->user_email;
+                $seller_email[]     = sanitize_email($vendor->user_email);
             }
             $seller_email           = array_unique($seller_email);
             $sellercount            = count($seller_email);
             $blogusers              = get_users('role=administrator');
 
             foreach ($blogusers as $user) {
-                $admin_email = $user->user_email;
+                $admin_email = sanitize_email($user->user_email);
             }
 
             if ($sellercount == 1 && $seller_email[0] == $admin_email) {
@@ -830,10 +831,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
         }
 
         if ($getuserapi->status == 'success') {
-            $buyer_country = $getuserapi->data->country_code;
+            $buyer_country      = $getuserapi->data->country_code;
             $buyer_country_name = $getuserapi->data->country;
         } else {
-            $buyer_country = $order->get_billing_country();
+            $buyer_country      = $order->get_billing_country();
             $buyer_country_name = WC()->countries->countries[$order->get_billing_country()];
         }
 
@@ -847,11 +848,11 @@ class TCPG_Gateway extends WC_Payment_Gateway
             if ($invoice_currency_check->status == 'success' && in_array($store_currency, $invoice_currency_check->data->currencies)) {
                 $invoice_currency = true;
             } else {
-                $message = __('Transactions between buyers from ' . $buyer_country_name . ' and sellers from ' . $getsellerapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
+                $message = __('Transactions between buyers from ' . esc_html($buyer_country_name) . ' and sellers from ' . esc_html($getsellerapi->data->country) . ' are currently not supported in ' . esc_html($site_currency) . '', 'wc-tp-payment-gateway');
                 wc_add_notice($message, 'error');
             }
         } else {
-            $country_config_message = __('Transactions between buyers from ' . $buyer_country_name . ' and sellers from ' . $getsellerapi->data->country . ' are currently not supported', 'wc-tp-payment-gateway');
+            $country_config_message = __('Transactions between buyers from ' . esc_html($buyer_country_name) . ' and sellers from ' . esc_html($getsellerapi->data->country) . ' are currently not supported', 'wc-tp-payment-gateway');
             wc_add_notice($country_config_message, 'error');
         }
 
@@ -873,18 +874,18 @@ class TCPG_Gateway extends WC_Payment_Gateway
             if ($result->status == 'error') {
 
                 $create_user_error_msg  = "";
-                $create_user_error_msg  = $result->message;
+                $create_user_error_msg  = esc_html($result->message);
                 $create_user_error_msg .= ", TazaPay Email : " . $order->get_billing_email();
 
                 foreach ($result->errors as $key => $error) {
                     if (isset($error->code)) {
-                        $create_user_error_msg .= ", code: " . $error->code;
+                        $create_user_error_msg .= ", code: " . esc_html($error->code);
                     }
                     if (isset($error->message)) {
-                        $create_user_error_msg .= ", Message: " . $error->message;
+                        $create_user_error_msg .= ", Message: " . esc_html($error->message);
                     }
                     if (isset($error->remarks)) {
-                        $create_user_error_msg .= ", Remarks: " . $error->remarks;
+                        $create_user_error_msg .= ", Remarks: " . esc_html($error->remarks);
                     }
                 }
                 $order->add_order_note($create_user_error_msg, true);
@@ -894,10 +895,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
             if ($result->status == 'success') {
 
                 $tablename  = $wpdb->prefix . 'tazapay_user';
-                $account_id = $result->data->account_id;
+                $account_id = esc_html($result->data->account_id);
 
                 $user_results   = $wpdb->get_results("SELECT account_id FROM $tablename WHERE email = '" . $order->get_billing_email() . "' AND environment = '" . $this->environment . "'");
-                $db_account_id  = $user_results[0]->account_id;
+                $db_account_id  = esc_html($user_results[0]->account_id);
 
                 if (empty($db_account_id)) {
                     $wpdb->insert(
@@ -925,7 +926,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
         if (!empty($account_id) && $invoice_currency == true) {
 
-            $seller_id = $getsellerapi->data->id;
+            $seller_id     = $getsellerapi->data->id;
             foreach (WC()->cart->get_cart() as $cart_item) {
                 $item_name = $cart_item['data']->get_title();
                 $quantity  = $cart_item['quantity'];
@@ -966,13 +967,13 @@ class TCPG_Gateway extends WC_Payment_Gateway
                 foreach ($result_escrow->errors as $key => $error) {
 
                     if (isset($error->code)) {
-                        $create_escrow_msg .= ", code: " . $error->code;
+                        $create_escrow_msg .= ", code: " . esc_html($error->code);
                     }
                     if (isset($error->message)) {
-                        $create_escrow_msg .= ", Message: " . $error->message;
+                        $create_escrow_msg .= ", Message: " . esc_html($error->message);
                     }
                     if (isset($error->remarks)) {
-                        $create_escrow_msg .= ", Remarks: " . $error->remarks;
+                        $create_escrow_msg .= ", Remarks: " . esc_html($error->remarks);
                     }
                 }
                 $order->add_order_note($create_escrow_msg, true);
@@ -1001,13 +1002,13 @@ class TCPG_Gateway extends WC_Payment_Gateway
                     foreach ($result_payment->errors as $key => $error) {
 
                         if (isset($error->code)) {
-                            $payment_msg .= ", code: " . $error->code;
+                            $payment_msg .= ", code: " . esc_html($error->code);
                         }
                         if (isset($error->message)) {
-                            $payment_msg .= ", Message: " . $error->message;
+                            $payment_msg .= ", Message: " . esc_html($error->message);
                         }
                         if (isset($error->remarks)) {
-                            $payment_msg .= ", Remarks: " . $error->remarks;
+                            $payment_msg .= ", Remarks: " . esc_html($error->remarks);
                         }
                     }
                     $order->add_order_note($payment_msg, true);
@@ -1030,7 +1031,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
                     return array(
                         'result' => 'success',
-                        'redirect' => $redirect_url
+                        'redirect' => esc_url($redirect_url)
                     );
                 }
             }
@@ -1064,7 +1065,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
             $payment_url = get_post_meta($order->get_id(), 'redirect_url', true);
 
             if (isset($payment_url) && !empty($payment_url)) {
-                printf('<a class="woocommerce-button button pay" href="%s">%s</a>', $payment_url, __("Pay With Escrow", "wc-tp-payment-gateway"));
+                printf('<a class="woocommerce-button button pay" href="%s">%s</a>', esc_url($payment_url), __("Pay With Escrow", "wc-tp-payment-gateway"));
             }
         }
     }
@@ -1078,10 +1079,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
         foreach ($results as $note) {
             $order_note[]  = array(
-                'note_id'      => $note->comment_ID,
-                'note_date'    => $note->comment_date,
-                'note_author'  => $note->comment_author,
-                'note_content' => $note->comment_content,
+                'note_id'      => esc_html($note->comment_ID),
+                'note_date'    => esc_html($note->comment_date),
+                'note_author'  => esc_html($note->comment_author),
+                'note_content' => esc_html($note->comment_content),
             );
         }
         return $order_note;
@@ -1145,7 +1146,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
                                     esc_html_e('Completed', 'wc-tp-payment-gateway');
                                 }
                             } else {
-                                printf('<a class="woocommerce-button button pay" href="%s">%s</a>', $redirect_url, __("Pay With Escrow", "wc-tp-payment-gateway"));
+                                printf('<a class="woocommerce-button button pay" href="%s">%s</a>', esc_url($redirect_url), __("Pay With Escrow", "wc-tp-payment-gateway"));
                             }
                             ?>
                         </td>
@@ -1157,10 +1158,8 @@ class TCPG_Gateway extends WC_Payment_Gateway
             $order_notes = $this->tcpg_get_private_order_notes($order_id);
             if (isset($order_notes) && count($order_notes) > 1) {
                 foreach ($order_notes as $note) {
-                    $note_id = $note['note_id'];
-                    $note_date = $note['note_date'];
-                    $note_author = $note['note_author'];
-                    $note_content = $note['note_content'];
+                    $note_date = esc_html($note['note_date']);
+                    $note_content = esc_html($note['note_content']);
                     ?>
                     <p><strong><?php esc_html_e(date('F j, Y h:i A', strtotime($note_date)), 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($note_content, 'wc-tp-payment-gateway'); ?></p>
                     <?php
@@ -1179,9 +1178,9 @@ class TCPG_Gateway extends WC_Payment_Gateway
             $logo_url         = TCPG_PUBLIC_ASSETS_DIR . "images/logo-dark.svg";
             $payment_methods  = TCPG_PUBLIC_ASSETS_DIR . "images/payment_methods.svg";
 
-            $icon   = '<div class="tazapay-checkout-button"><div class="tazapay-payment-logo"><span><img src=' . $logo_url . ' alt="tazapay" /></span>';
+            $icon   = '<div class="tazapay-checkout-button"><div class="tazapay-payment-logo"><span><img src=' . esc_url($logo_url) . ' alt="tazapay" /></span>';
             $icon  .= __('Pay securely with buyer protection', 'wc-tp-payment-gateway');
-            $icon  .= '</div><div class="tazapay-payment-method"><img src=' . $payment_methods . ' alt="tazapay" class="tazapay-payment-method"/></div></div>';
+            $icon  .= '</div><div class="tazapay-payment-method"><img src=' . esc_url($payment_methods) . ' alt="tazapay" class="tazapay-payment-method"/></div></div>';
 
             return $icon;
         } else {
@@ -1217,13 +1216,13 @@ class TCPG_Gateway extends WC_Payment_Gateway
             $product_id         = $cart_item['data']->get_id();
             $vendor_id          = get_post_field('post_author', $product_id);
             $vendor             = get_userdata($vendor_id);
-            $seller_email[]     = $vendor->user_email;
+            $seller_email[]     = sanitize_email($vendor->user_email);
         }
 
-        $selleremail = array_unique($seller_email);
-        $blogusers = get_users('role=administrator');
+        $selleremail    = array_unique($seller_email);
+        $blogusers      = get_users('role=administrator');
         foreach ($blogusers as $user) {
-            $admin_email = $user->user_email;
+            $admin_email = sanitize_email($user->user_email);
         }
 
         $sellercount = count($selleremail);
@@ -1235,7 +1234,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
                 // no code needed
             } else {
                 $tablename      = $wpdb->prefix . 'tazapay_user';
-                $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $selleremail[0] . "' AND environment = '" . $this->environment . "'");
+                $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . sanitize_email($selleremail[0]) . "' AND environment = '" . $this->environment . "'");
                 $account_id     = $seller_results[0]->account_id;
 
                 if ($this->tazapay_seller_type == 'multiseller' && $this->tazapay_multi_seller_plugin == 'dokan' && empty($account_id)) {
@@ -1259,9 +1258,8 @@ class TCPG_Gateway extends WC_Payment_Gateway
     */
     public function tcpg_order_meta_general($order)
     {
-        $account_id = get_post_meta($order->get_id(), 'account_id', true);
-        $redirect_url = get_post_meta($order->get_id(), 'redirect_url', true);
-        $txn_no = get_post_meta($order->get_id(), 'txn_no', true);
+        $account_id     = get_post_meta($order->get_id(), 'account_id', true);
+        $txn_no         = get_post_meta($order->get_id(), 'txn_no', true);
 
         if (isset($account_id) && !empty($account_id)) {
             ?>
@@ -1373,11 +1371,11 @@ function tcpg_payment_gateway_disable_tazapay($available_gateways)
 
                 $blogusers = get_users('role=administrator');
                 foreach ($blogusers as $user) {
-                    $admin_email = $user->user_email;
+                    $admin_email = sanitize_email($user->user_email);
                 }
 
                 if ($seller_email[0] == $admin_email) {
-                    $seller_email[0] = $request_api_call->seller_email;
+                    $seller_email[0] = sanitize_email($request_api_call->seller_email);
                 }
 
                 if ($sellercount == 1) {
@@ -1395,20 +1393,20 @@ function tcpg_payment_gateway_disable_tazapay($available_gateways)
                         } else {
                             unset($available_gateways[$payment_id]);
                             $buyer_country     = WC()->countries->countries[$field_value];
-                            $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
+                            $message = __('Transactions between buyers from ' . esc_html($buyer_country) . ' and sellers from ' . esc_html($getuserapi->data->country) . ' are currently not supported in ' . esc_html($site_currency) . '', 'wc-tp-payment-gateway');
                             wc_add_notice($message, 'error');
                         }
                     } else {
                         unset($available_gateways[$payment_id]);
                         $buyer_country     = WC()->countries->countries[$field_value];
-                        $country_config_message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported', 'wc-tp-payment-gateway');
+                        $country_config_message = __('Transactions between buyers from ' . esc_html($buyer_country) . ' and sellers from ' . esc_html($getuserapi->data->country) . ' are currently not supported', 'wc-tp-payment-gateway');
                         wc_add_notice($country_config_message, 'error');
                     }
                 }
             }
         } else {
 
-            $seller_email      = $request_api_call->seller_email;
+            $seller_email      = sanitize_email($request_api_call->seller_email);
             $getuserapi        = $request_api_call->tcpg_request_api_getuser($seller_email);
             $countryconfig     = $request_api_call->tcpg_request_api_countryconfig($getuserapi->data->country_code);
 
@@ -1422,13 +1420,13 @@ function tcpg_payment_gateway_disable_tazapay($available_gateways)
                 } else {
                     unset($available_gateways[$payment_id]);
                     $buyer_country     = WC()->countries->countries[$field_value];
-                    $message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported in ' . $site_currency . '', 'wc-tp-payment-gateway');
+                    $message = __('Transactions between buyers from ' . esc_html($buyer_country) . ' and sellers from ' . esc_html($getuserapi->data->country) . ' are currently not supported in ' . esc_html($site_currency) . '', 'wc-tp-payment-gateway');
                     wc_add_notice($message, 'error');
                 }
             } else {
                 unset($available_gateways[$payment_id]);
                 $buyer_country          = WC()->countries->countries[$field_value];
-                $country_config_message = __('Transactions between buyers from ' . $buyer_country . ' and sellers from ' . $getuserapi->data->country . ' are currently not supported', 'wc-tp-payment-gateway');
+                $country_config_message = __('Transactions between buyers from ' . esc_html($buyer_country) . ' and sellers from ' . esc_html($getuserapi->data->country) . ' are currently not supported', 'wc-tp-payment-gateway');
                 wc_add_notice($country_config_message, 'error');
             }
         }
@@ -1440,34 +1438,29 @@ add_action('wp_ajax_setting_optionsave', 'tcpg_setting_optionsave');
 function tcpg_setting_optionsave()
 {
     $woocommerce_tz_tazapay_settings                = get_option('woocommerce_tz_tazapay_settings');
-    $woocommerce_tz_tazapay_title                   = sanitize_text_field($_POST['woocommerce_tz_tazapay_title']);
     $woocommerce_tz_tazapay_sandboxmode             = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
-    $woocommerce_tz_tazapay_sandbox_api_key         = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_key']);
-    $woocommerce_tz_tazapay_sandbox_api_secret_key  = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_secret_key']);
-    $woocommerce_tz_tazapay_live_api_key            = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_key']);
-    $woocommerce_tz_tazapay_live_api_secret_key     = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_secret_key']);
-    $woocommerce_tz_tazapay_seller_email            = sanitize_text_field($_POST['woocommerce_tz_tazapay_seller_email']);
+    $woocommerce_tz_tazapay_seller_email            = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
 
     global $wpdb;
     $tablename = $wpdb->prefix . 'tazapay_user';
 
     $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $woocommerce_tz_tazapay_seller_email . "' AND environment = '" . $woocommerce_tz_tazapay_sandboxmode . "'");
-    $account_id = !empty($seller_results[0]->account_id) ? $seller_results[0]->account_id : '';
+    $account_id = !empty($seller_results[0]->account_id) ? esc_html($seller_results[0]->account_id) : '';
 
-    $woocommerce_tz_tazapay_settings['title']                    = $woocommerce_tz_tazapay_title;
-    $woocommerce_tz_tazapay_settings['sandboxmode']              = $woocommerce_tz_tazapay_sandboxmode;
-    $woocommerce_tz_tazapay_settings['sandbox_api_key']          = $woocommerce_tz_tazapay_sandbox_api_key;
-    $woocommerce_tz_tazapay_settings['sandbox_api_secret_key']   = $woocommerce_tz_tazapay_sandbox_api_secret_key;
-    $woocommerce_tz_tazapay_settings['live_api_key']             = $woocommerce_tz_tazapay_live_api_key;
-    $woocommerce_tz_tazapay_settings['live_api_secret_key']      = $woocommerce_tz_tazapay_live_api_secret_key;
+    $woocommerce_tz_tazapay_settings['title']                    = sanitize_text_field($_POST['woocommerce_tz_tazapay_title']);
+    $woocommerce_tz_tazapay_settings['sandboxmode']              = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
+    $woocommerce_tz_tazapay_settings['sandbox_api_key']          = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_key']);
+    $woocommerce_tz_tazapay_settings['sandbox_api_secret_key']   = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_secret_key']);
+    $woocommerce_tz_tazapay_settings['live_api_key']             = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_key']);
+    $woocommerce_tz_tazapay_settings['live_api_secret_key']      = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_secret_key']);
 
     if ($account_id) {
-        $woocommerce_tz_tazapay_settings['seller_email']         = $woocommerce_tz_tazapay_seller_email;
+        $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
         $woocommerce_tz_tazapay_settings['seller_id']            = $account_id;
 
         echo json_encode(array('account_id' => $account_id));
     } else {
-        $woocommerce_tz_tazapay_settings['seller_email']         = $woocommerce_tz_tazapay_seller_email;
+        $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
         $woocommerce_tz_tazapay_settings['seller_id']            = '';
 
         echo json_encode(array('account_id' => ''));
@@ -1516,7 +1509,6 @@ function tcpg_orders_list_column_content($column, $post_id)
                 <p><strong><?php esc_html_e('Escrow state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->state, 'wc-tp-payment-gateway'); ?></p>
                 <p><strong><?php esc_html_e('Escrow sub_state: ', 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($getEscrowstate->data->sub_state, 'wc-tp-payment-gateway'); ?></p>
         <?php
-
             } else {
                 esc_html_e($payment_title, 'wc-tp-payment-gateway');
             }
@@ -1537,9 +1529,6 @@ function tcpg_view_order_page($order_id)
         $user_email     = $order->get_billing_email();
         $txn_no         = get_post_meta($order_id, 'txn_no', true);
         $redirect_url   = get_post_meta($order_id, 'redirect_url', true);
-
-        global $wpdb;
-        $tablename      = $wpdb->prefix . 'tazapay_user';
 
         ?>
         <h2><?php esc_html_e('Transaction Details', 'wc-tp-payment-gateway'); ?></h2>
@@ -1570,7 +1559,7 @@ function tcpg_view_order_page($order_id)
                         }
                         ?>
                         <form method="post" name="tazapay-order-status" action="">
-                            <input type="submit" name="order-status" value="Refresh Status">
+                            <input type="submit" name="order-status" value="<?php esc_html_e('Refresh Status', 'wc-tp-payment-gateway'); ?>">
                         </form>
                         <?php
 
@@ -1584,8 +1573,7 @@ function tcpg_view_order_page($order_id)
                                 esc_html_e('Completed', 'wc-tp-payment-gateway');
                             }
                         } else {
-
-                            printf('<a class="woocommerce-button button pay" href="%s">%s</a>', $redirect_url, __("Pay With Escrow", "wc-tp-payment-gateway"));
+                            printf('<a class="woocommerce-button button pay" href="%s">%s</a>', esc_url($redirect_url), __("Pay With Escrow", "wc-tp-payment-gateway"));
                         }
                         ?>
                     </td>
@@ -1597,10 +1585,8 @@ function tcpg_view_order_page($order_id)
         $order_notes = $request_api_call->tcpg_get_private_order_notes($order_id);
         if (isset($order_notes) && count($order_notes) > 1) {
             foreach ($order_notes as $note) {
-                $note_id = $note['note_id'];
-                $note_date = $note['note_date'];
-                $note_author = $note['note_author'];
-                $note_content = $note['note_content'];
+                $note_date     = esc_html($note['note_date']);
+                $note_content  = esc_html($note['note_content']);
         ?>
                 <p><strong><?php esc_html_e(date('F j, Y h:i A', strtotime($note_date)), 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($note_content, 'wc-tp-payment-gateway'); ?></p>
         <?php
