@@ -11,10 +11,10 @@
   $tazapay_multi_seller_plugin      = esc_html($woocommerce_tz_tazapay_settings['tazapay_multi_seller_plugin']);
 
   if ($sandboxmode == 'sandbox') {
-    $api_url     = esc_url('https://api-sandbox.tazapay.com');
+    $api_url     = 'https://api-sandbox.tazapay.com';
     $environment = 'sandbox';
   } else {
-    $api_url     = esc_url('https://api.tazapay.com');
+    $api_url     = 'https://api.tazapay.com';
     $environment = 'production';
   }
 
@@ -68,7 +68,7 @@
       $business_name        = sanitize_text_field($_POST['business_name']);
       $phone_number         = sanitize_text_field($_POST['phone_number']);      
       $country              = sanitize_text_field($_POST['country']);
-      $seller_email         = sanitize_email($user_email);
+      $seller_email         = $user_email;
 
       $phoneCode = $apiRequestCall->tcpg_getphonecode($country);
 
@@ -121,8 +121,8 @@
           array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
         );
 
-        $woocommerce_tz_tazapay_settings['seller_id'] = $account_id;
-        update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
+        //$woocommerce_tz_tazapay_settings['seller_id'] = $account_id;
+        //update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
   ?>
         <div class="notice notice-success is-dismissible">
           <p><?php esc_html_e($createUser->message, 'wc-tp-payment-gateway'); ?></p>
@@ -170,20 +170,20 @@
           <div class="dokan-form-group">
             <label for="firstname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('First Name', 'wc-tp-payment-gateway'); ?></b></label>
             <div class="dokan-w5">
-              <input type="text" placeholder="<?php echo esc_html( __( 'First Name', 'wc-tp-payment-gateway' ) ); ?>" name="first_name" id="first_name">
+              <input type="text" placeholder="<?php esc_attr_e( 'First Name', 'wc-tp-payment-gateway' ); ?>" name="first_name" id="first_name">
             </div>
           </div>
           <div class="dokan-form-group">
             <label for="lastname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Last Name', 'wc-tp-payment-gateway'); ?></b></label>
             <div class="dokan-w5">
-              <input type="text" placeholder="<?php echo esc_html( __( 'Last Name', 'wc-tp-payment-gateway' ) ); ?>" name="last_name" id="last_name">
+              <input type="text" placeholder="<?php esc_attr_e( 'Last Name', 'wc-tp-payment-gateway' ); ?>" name="last_name" id="last_name">
             </div>
           </div>
         </div>
         <div id="business" class="dokan-form-group">
           <label for="businessname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Business Name', 'wc-tp-payment-gateway'); ?></b></label>
           <div class="dokan-w5">
-            <input type="text" placeholder="<?php echo esc_html( __( 'Business Name', 'wc-tp-payment-gateway' ) ); ?>" name="business_name" id="business_name">
+            <input type="text" placeholder="<?php esc_attr_e( 'Business Name', 'wc-tp-payment-gateway' ); ?>" name="business_name" id="business_name">
           </div>
         </div>
         <div class="dokan-form-group">
@@ -192,9 +192,9 @@
             <?php
             if (sanitize_email($user_email)) {
             ?>
-              <input type="text" placeholder="<?php echo esc_html( __( 'Enter Email', 'wc-tp-payment-gateway' ) ); ?>" name="email" id="email" value="<?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?>" readonly disabled>
+              <input type="text" placeholder="<?php esc_attr_e( 'Enter Email', 'wc-tp-payment-gateway' ); ?>" name="email" id="email" value="<?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?>" readonly disabled>
             <?php } else { ?>
-              <input type="text" placeholder="<?php echo esc_html( __( 'Enter Email', 'wc-tp-payment-gateway' ) ); ?>" name="email" id="email">
+              <input type="text" placeholder="<?php esc_attr_e( 'Enter Email', 'wc-tp-payment-gateway' ); ?>" name="email" id="email">
             <?php
             }
             ?>
@@ -203,7 +203,7 @@
         <div class="dokan-form-group">
           <label for="phonenumber" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Phone Number', 'wc-tp-payment-gateway'); ?></b></label>
           <div class="dokan-w5">
-            <input type="tel" placeholder="<?php echo esc_html( __( 'Phone Number', 'wc-tp-payment-gateway' ) ); ?>" name="phone_number" id="phone_number">
+            <input type="tel" placeholder="<?php esc_attr_e( 'Phone Number', 'wc-tp-payment-gateway' ); ?>" name="phone_number" id="phone_number">
           </div>
         </div>
         <div class="dokan-form-group">
@@ -256,7 +256,7 @@
       </tr>
       <?php if ($business_name) { ?>
         <tr>
-          <th><?php esc_html_e('Bussiness Name:', 'wc-tp-payment-gateway'); ?></th>
+          <th><?php esc_html_e('Business Name:', 'wc-tp-payment-gateway'); ?></th>
           <td><?php esc_html_e($business_name, 'wc-tp-payment-gateway'); ?></td>
         </tr>
       <?php } else { ?>

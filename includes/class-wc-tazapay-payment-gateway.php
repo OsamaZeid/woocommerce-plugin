@@ -41,10 +41,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $this->live_api_secret_key          = $this->sandboxmode ? $this->get_option('sandbox_api_secret_key') : $this->get_option('live_api_secret_key');
 
         if ($this->sandboxmode == 'sandbox') {
-            $this->base_api_url = esc_url('https://api-sandbox.tazapay.com');
+            $this->base_api_url = 'https://api-sandbox.tazapay.com';
             $this->environment  = 'sandbox';
         } else {
-            $this->base_api_url = esc_url('https://api.tazapay.com');
+            $this->base_api_url = 'https://api.tazapay.com';
             $this->environment  = 'production';
         }
 
@@ -503,7 +503,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $json = json_encode($args);
 
         $response = wp_remote_post(
-            $api_url,
+            esc_url_raw ($api_url ),
             array(
                 'method'      => 'POST',
                 'timeout'     => 45,
@@ -583,7 +583,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            $api_url . $APIEndpoint . '?buyer_country=' . $buyer_country . '&seller_country=' . $seller_country,
+            esc_url_raw ($api_url ) . $APIEndpoint . '?buyer_country=' . $buyer_country . '&seller_country=' . $seller_country,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,
@@ -644,7 +644,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            $api_url . $APIEndpoint,
+            esc_url_raw ($api_url ) . $APIEndpoint,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,
@@ -705,7 +705,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            $api_url . $APIEndpoint . '?country=' . $country_code,
+            esc_url_raw ($api_url ) . $APIEndpoint . '?country=' . $country_code,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,
@@ -766,7 +766,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            $api_url . $APIEndpoint,
+            esc_url_raw ($api_url ) . $APIEndpoint,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,

@@ -182,8 +182,8 @@ class TCPG_User_List_Table extends WP_List_Table
 
         function usort_reorder($a, $b)
         {
-            $orderby = !empty($_REQUEST['orderby']) ? esc_html($_REQUEST['orderby']) : 'id';
-            $order   = !empty($_REQUEST['order']) ? esc_html($_REQUEST['order']) : 'DESC';
+            $orderby = !empty($_REQUEST['orderby']) ? sanitize_key($_REQUEST['orderby']) : 'id';
+            $order   = !empty($_REQUEST['order']) ? sanitize_key($_REQUEST['order']) : 'DESC';
             $result  = strnatcmp($a[$orderby], $b[$orderby]);
             
             return ($order === 'asc') ? $result : -$result;
@@ -240,7 +240,6 @@ function tcpg_render_list_page()
         <div id="icon-users" class="icon32"><br /></div>
         <h2><?php esc_html_e('Tazapay Users', 'wc-tp-payment-gateway'); ?></h2>        
         <form id="user-filter" method="get">
-            <input type="hidden" name="page" value="<?php esc_html_e($_REQUEST['page'], 'wc-tp-payment-gateway'); ?>" />
             <?php $tazapayListTable->display() ?>
         </form>
     </div>
@@ -256,7 +255,7 @@ function tcpg_render_edit_page()
     $tablename  = $wpdb->prefix . 'tazapay_user';
     $row_user   = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
-    if ('edit' === esc_html($_REQUEST['action'])) {
+    if ('edit' === sanitize_text_field($_REQUEST['action'])) {
         $row_user = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
         if (count(array($row_user)) > 0) {
@@ -284,7 +283,7 @@ function tcpg_render_edit_page()
                         <table class="form-table">
                             <tr valign="top">
                                 <th scope="row"><label><?php esc_html_e('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?></label></th>
-                                <td><input type="text" name="account_id" id="account_id" value="<?php esc_html_e( $account_id, 'wc-tp-payment-gateway' ); ?>" placeholder="<?php esc_html_e('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?>" size="50" required />
+                                <td><input type="text" name="account_id" id="account_id" value="<?php esc_html_e( $account_id, 'wc-tp-payment-gateway' ); ?>" placeholder="<?php esc_attr_e('Tazapay Account UUID', 'wc-tp-payment-gateway'); ?>" size="50" required />
                                 </td>
                             </tr>
                             <tr valign="top">

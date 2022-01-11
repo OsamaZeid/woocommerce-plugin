@@ -24,9 +24,9 @@ function tcpg_tcpg_request_api_orderstatus($txn_no)
   $apiSecret  = $woocommerce_tz_tazapay_settings['sandboxmode'] ? esc_html($woocommerce_tz_tazapay_settings['sandbox_api_secret_key']) : esc_html($woocommerce_tz_tazapay_settings['live_api_secret_key']);
 
   if ($woocommerce_tz_tazapay_settings['sandboxmode'] == 'sandbox') {
-    $api_url = esc_url('https://api-sandbox.tazapay.com');
+    $api_url = 'https://api-sandbox.tazapay.com';
   } else {
-    $api_url = esc_url('https://api.tazapay.com');
+    $api_url = 'https://api.tazapay.com';
   }
 
   /*
@@ -45,7 +45,7 @@ function tcpg_tcpg_request_api_orderstatus($txn_no)
   $signature  = base64_encode($hmacSHA256);
 
   $response = wp_remote_post(
-    $api_url . $APIEndpoint,
+    esc_url_raw( $api_url ) . $APIEndpoint,
     array(
       'method'      => 'GET',
       'sslverify'   => false,
