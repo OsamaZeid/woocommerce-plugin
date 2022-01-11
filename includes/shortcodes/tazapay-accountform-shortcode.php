@@ -32,25 +32,25 @@
   $getuserapi     = $apiRequestCall->tcpg_request_api_getuser($user_email);
 
   if (!empty($getuserapi->data->id)) {
-    $account_id = esc_html($getuserapi->data->id);
+
+    $account_id = isset($getuserapi->data->id) ? sanitize_text_field($getuserapi->data->id) : '';
 
     if (empty($db_account_id)) {
 
       $wpdb->insert(
         $tablename,
         array(
-          'account_id'           => $account_id,
+          'account_id'           => isset($account_id) ? sanitize_text_field($account_id) : '',
           'user_type'            => "seller",
-          'email'                => $getuserapi->data->email,
-          'first_name'           => $getuserapi->data->first_name,
-          'last_name'            => $getuserapi->data->last_name,
-          'contact_code'         => $getuserapi->data->contact_code,
-          'contact_number'       => $getuserapi->data->contact_number,
-          'country'              => $getuserapi->data->country_code,
-          'ind_bus_type'         => $getuserapi->data->ind_bus_type,
-          'business_name'        => $getuserapi->data->business_name,
-          'partners_customer_id' => $getuserapi->data->customer_id,
-          'environment'          => $environment,
+          'email'                => isset($getuserapi->data->email) ? sanitize_text_field($getuserapi->data->email) : '',
+          'first_name'           => isset($getuserapi->data->first_name) ? sanitize_text_field($getuserapi->data->first_name) : '',
+          'last_name'            => isset($getuserapi->data->last_name) ? sanitize_text_field($getuserapi->data->last_name) : '',
+          'contact_code'         => isset($getuserapi->data->contact_code) ? sanitize_text_field($getuserapi->data->contact_code) : '',
+          'contact_number'       => isset($getuserapi->data->contact_number) ? sanitize_text_field($getuserapi->data->contact_number) : '',
+          'country'              => isset($getuserapi->data->country_code) ? sanitize_text_field($getuserapi->data->country_code) : '',
+          'ind_bus_type'         => isset($getuserapi->data->ind_bus_type) ? sanitize_text_field($getuserapi->data->ind_bus_type) : '',
+          'business_name'        => isset($getuserapi->data->business_name) ? sanitize_text_field($getuserapi->data->business_name) : '',
+          'environment'          => isset($environment) ? sanitize_text_field($environment) : '',
           'created'              => current_time('mysql')
         ),
         array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
@@ -62,12 +62,12 @@
 
     if (isset($_POST['submit'])) {
 
-      $indbustype           = sanitize_text_field($_POST['indbustype']);
-      $first_name           = sanitize_text_field($_POST['first_name']);
-      $last_name            = sanitize_text_field($_POST['last_name']);
-      $business_name        = sanitize_text_field($_POST['business_name']);
-      $phone_number         = sanitize_text_field($_POST['phone_number']);      
-      $country              = sanitize_text_field($_POST['country']);
+      $indbustype           = isset($_POST['indbustype']) ? sanitize_text_field($_POST['indbustype']) : '';
+      $first_name           = isset($_POST['first_name']) ? sanitize_text_field($_POST['first_name']) : '';
+      $last_name            = isset($_POST['last_name']) ? sanitize_text_field($_POST['last_name']) : '';
+      $business_name        = isset($_POST['business_name']) ? sanitize_text_field($_POST['business_name']) : '';
+      $phone_number         = isset($_POST['phone_number']) ? sanitize_text_field($_POST['phone_number']) : '';
+      $country              = isset($_POST['country']) ? sanitize_text_field($_POST['country']) : '';
       $seller_email         = $user_email;
 
       $phoneCode = $apiRequestCall->tcpg_getphonecode($country);
@@ -127,7 +127,7 @@
         <div class="notice notice-success is-dismissible">
           <p><?php esc_html_e($createUser->message, 'wc-tp-payment-gateway'); ?></p>
         </div>
-        <?php
+      <?php
       } else {
 
         $create_user_error_msg = "";
@@ -145,7 +145,7 @@
             $create_user_error_msg .= "Remarks: " . esc_html($error->remarks) . '<br>';
           }
         }
-        ?>
+      ?>
         <div class="notice notice-error is-dismissible">
           <p><?php esc_html_e($create_user_error_msg, 'wc-tp-payment-gateway'); ?></p>
         </div>
@@ -170,20 +170,20 @@
           <div class="dokan-form-group">
             <label for="firstname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('First Name', 'wc-tp-payment-gateway'); ?></b></label>
             <div class="dokan-w5">
-              <input type="text" placeholder="<?php esc_attr_e( 'First Name', 'wc-tp-payment-gateway' ); ?>" name="first_name" id="first_name">
+              <input type="text" placeholder="<?php esc_attr_e('First Name', 'wc-tp-payment-gateway'); ?>" name="first_name" id="first_name">
             </div>
           </div>
           <div class="dokan-form-group">
             <label for="lastname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Last Name', 'wc-tp-payment-gateway'); ?></b></label>
             <div class="dokan-w5">
-              <input type="text" placeholder="<?php esc_attr_e( 'Last Name', 'wc-tp-payment-gateway' ); ?>" name="last_name" id="last_name">
+              <input type="text" placeholder="<?php esc_attr_e('Last Name', 'wc-tp-payment-gateway'); ?>" name="last_name" id="last_name">
             </div>
           </div>
         </div>
         <div id="business" class="dokan-form-group">
           <label for="businessname" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Business Name', 'wc-tp-payment-gateway'); ?></b></label>
           <div class="dokan-w5">
-            <input type="text" placeholder="<?php esc_attr_e( 'Business Name', 'wc-tp-payment-gateway' ); ?>" name="business_name" id="business_name">
+            <input type="text" placeholder="<?php esc_attr_e('Business Name', 'wc-tp-payment-gateway'); ?>" name="business_name" id="business_name">
           </div>
         </div>
         <div class="dokan-form-group">
@@ -192,9 +192,9 @@
             <?php
             if (sanitize_email($user_email)) {
             ?>
-              <input type="text" placeholder="<?php esc_attr_e( 'Enter Email', 'wc-tp-payment-gateway' ); ?>" name="email" id="email" value="<?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?>" readonly disabled>
+              <input type="text" placeholder="<?php esc_attr_e('Enter Email', 'wc-tp-payment-gateway'); ?>" name="email" id="email" value="<?php esc_html_e($user_email, 'wc-tp-payment-gateway'); ?>" readonly disabled>
             <?php } else { ?>
-              <input type="text" placeholder="<?php esc_attr_e( 'Enter Email', 'wc-tp-payment-gateway' ); ?>" name="email" id="email">
+              <input type="text" placeholder="<?php esc_attr_e('Enter Email', 'wc-tp-payment-gateway'); ?>" name="email" id="email">
             <?php
             }
             ?>
@@ -203,7 +203,7 @@
         <div class="dokan-form-group">
           <label for="phonenumber" class="dokan-w3 dokan-control-label"><b><?php esc_html_e('Phone Number', 'wc-tp-payment-gateway'); ?></b></label>
           <div class="dokan-w5">
-            <input type="tel" placeholder="<?php esc_attr_e( 'Phone Number', 'wc-tp-payment-gateway' ); ?>" name="phone_number" id="phone_number">
+            <input type="tel" placeholder="<?php esc_attr_e('Phone Number', 'wc-tp-payment-gateway'); ?>" name="phone_number" id="phone_number">
           </div>
         </div>
         <div class="dokan-form-group">
@@ -229,16 +229,16 @@
 
   if (!empty($db_account_id)) {
 
-    $first_name     = $seller_results[0]->first_name;
-    $last_name      = $seller_results[0]->last_name;
-    $user_type      = $seller_results[0]->user_type;
-    $contact_code   = $seller_results[0]->contact_code;
-    $contact_number = $seller_results[0]->contact_number;
-    $country_name   = $seller_results[0]->country;
-    $ind_bus_type   = $seller_results[0]->ind_bus_type;
-    $business_name  = $seller_results[0]->business_name;
-    $created        = $seller_results[0]->created;
-    $environment    = $seller_results[0]->environment;
+    $first_name     = isset($seller_results[0]->first_name) ? esc_html($seller_results[0]->first_name) : '';
+    $last_name      = isset($seller_results[0]->last_name) ? esc_html($seller_results[0]->last_name) : '';
+    $user_type      = isset($seller_results[0]->user_type) ? esc_html($seller_results[0]->user_type) : '';
+    $contact_code   = isset($seller_results[0]->contact_code) ? esc_html($seller_results[0]->contact_code) : '';
+    $contact_number = isset($seller_results[0]->contact_number) ? esc_html($seller_results[0]->contact_number) : '';
+    $country_name   = isset($seller_results[0]->country) ? esc_html($seller_results[0]->country) : '';
+    $ind_bus_type   = isset($seller_results[0]->ind_bus_type) ? esc_html($seller_results[0]->ind_bus_type) : '';
+    $business_name  = isset($seller_results[0]->business_name) ? esc_html($seller_results[0]->business_name) : '';
+    $created        = isset($seller_results[0]->created) ? esc_html($seller_results[0]->created) : '';
+    $environment    = isset($seller_results[0]->environment) ? esc_html($seller_results[0]->environment) : '';
     $countryName    = WC()->countries->countries[$country_name];
   ?>
     <table class="wp-list-table widefat fixed striped table-view-list">

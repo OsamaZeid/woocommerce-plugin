@@ -75,10 +75,10 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
         if ($this->get_option('sandboxmode') === 'sandbox') {
             $text3          = __('Request Sandbox credentials for accepting payments via Tazapay. Signup now and go to \'Request API Key\'', 'wc-tp-payment-gateway');
-            $signupurl      = esc_url('https://sandbox.tazapay.com/signup');
+            $signupurl      = 'https://sandbox.tazapay.com/signup';
         } else {
             $text3          = __('Request Production credentials for accepting payments via Tazapay. Signup now and go to \'Request API Key\'', 'wc-tp-payment-gateway');
-            $signupurl      = esc_url('https://app.tazapay.com/signup');
+            $signupurl      = 'https://app.tazapay.com/signup';
         }
 
         if (is_plugin_active('dokan-lite/dokan.php')) {
@@ -115,7 +115,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
                     'production'  => __('Production', 'wc-tp-payment-gateway'),
                     'sandbox'     => __('Sandbox', 'wc-tp-payment-gateway'),
                 ),
-                'description' => __($text1 . '<br><br><a href="' . $signupurl . '" class="tz-signupurl button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">' . $text2 . '</a><p class="description signup-help-text">' . $text3 . '</p>', 'wc-tp-payment-gateway'),
+                'description' => __($text1 . '<br><br><a href="' . esc_url($signupurl) . '" class="tz-signupurl button-primary" target="_blank" title="Request credentials for accepting payments via Tazapay">' . $text2 . '</a><p class="description signup-help-text">' . $text3 . '</p>', 'wc-tp-payment-gateway'),
                 'default'     => 'production',
                 'class'       => ''
             ),
@@ -188,7 +188,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
             $seller_account_id                            = $getuserapi->data->id;
             $woocommerce_tz_tazapay_settings              = get_option('woocommerce_tz_tazapay_settings');
             $woocommerce_tz_tazapay_settings['seller_id'] = $seller_account_id;
-            
+
             update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
         } else {
             foreach ($getuserapi->errors as $key => $error) {
@@ -503,7 +503,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $json = json_encode($args);
 
         $response = wp_remote_post(
-            esc_url_raw ($api_url ),
+            esc_url_raw($api_url),
             array(
                 'method'      => 'POST',
                 'timeout'     => 45,
@@ -527,7 +527,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         } else {
 
             $upload_dir     = wp_upload_dir();
-            $filename       = $upload_dir['basedir'] .'/'.sanitize_file_name('[tazapay_payment_log],.txt');
+            $filename       = $upload_dir['basedir'] . '/' . sanitize_file_name('[tazapay_payment_log],.txt');
             $responsetxt    = 'Oder Id:' . esc_html($order_id) . '-' . wp_remote_retrieve_body($response) . "\n";
 
             if (file_exists($filename)) {
@@ -583,7 +583,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            esc_url_raw ($api_url ) . $APIEndpoint . '?buyer_country=' . $buyer_country . '&seller_country=' . $seller_country,
+            esc_url_raw($api_url) . $APIEndpoint . '?buyer_country=' . $buyer_country . '&seller_country=' . $seller_country,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,
@@ -644,7 +644,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            esc_url_raw ($api_url ) . $APIEndpoint,
+            esc_url_raw($api_url) . $APIEndpoint,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,
@@ -705,7 +705,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            esc_url_raw ($api_url ) . $APIEndpoint . '?country=' . $country_code,
+            esc_url_raw($api_url) . $APIEndpoint . '?country=' . $country_code,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,
@@ -766,7 +766,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $signature = base64_encode($hmacSHA256);
 
         $response = wp_remote_post(
-            esc_url_raw ($api_url ) . $APIEndpoint,
+            esc_url_raw($api_url) . $APIEndpoint,
             array(
                 'method'      => 'GET',
                 'sslverify'   => false,
@@ -895,10 +895,11 @@ class TCPG_Gateway extends WC_Payment_Gateway
             if ($result->status == 'success') {
 
                 $tablename  = $wpdb->prefix . 'tazapay_user';
-                $account_id = esc_html($result->data->account_id);
+                $account_id = isset($result->data->account_id) ? sanitize_text_field($result->data->account_id) : '';
 
                 $user_results   = $wpdb->get_results("SELECT account_id FROM $tablename WHERE email = '" . $order->get_billing_email() . "' AND environment = '" . $this->environment . "'");
-                $db_account_id  = esc_html($user_results[0]->account_id);
+
+                $db_account_id  = isset($user_results[0]->account_id) ? sanitize_text_field($user_results[0]->account_id) : '';
 
                 if (empty($db_account_id)) {
                     $wpdb->insert(
@@ -914,7 +915,6 @@ class TCPG_Gateway extends WC_Payment_Gateway
                             'country'              => $order->get_billing_country(),
                             'ind_bus_type'         => "Individual",
                             'business_name'        => "",
-                            'partners_customer_id' => "",
                             'environment'          => $this->environment,
                             'created'              => current_time('mysql')
                         ),
@@ -926,12 +926,14 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
         if (!empty($account_id) && $invoice_currency == true) {
 
-            $seller_id     = $getsellerapi->data->id;
+            $seller_id     = isset($getsellerapi->data->id) ? sanitize_text_field($getsellerapi->data->id) : '';
+
             foreach (WC()->cart->get_cart() as $cart_item) {
                 $item_name = $cart_item['data']->get_title();
                 $quantity  = $cart_item['quantity'];
                 $items[]   = $quantity . ' x ' . $item_name;
             }
+
             $listofitems   = implode(', ', $items);
             $description   = get_bloginfo('name') . ' : ' . $listofitems;
 
@@ -964,6 +966,7 @@ class TCPG_Gateway extends WC_Payment_Gateway
 
                 $create_escrow_msg = "";
                 $create_escrow_msg = $result_escrow->message;
+
                 foreach ($result_escrow->errors as $key => $error) {
 
                     if (isset($error->code)) {
@@ -1077,13 +1080,15 @@ class TCPG_Gateway extends WC_Payment_Gateway
         $table_perfixed = $wpdb->prefix . 'comments';
         $results = $wpdb->get_results("SELECT * FROM $table_perfixed WHERE  `comment_post_ID` = $order_id AND `comment_type` LIKE  'order_note'");
 
-        foreach ($results as $note) {
-            $order_note[]  = array(
-                'note_id'      => esc_html($note->comment_ID),
-                'note_date'    => esc_html($note->comment_date),
-                'note_author'  => esc_html($note->comment_author),
-                'note_content' => esc_html($note->comment_content),
-            );
+        if (is_array($results) && count($results) > 0) {
+            foreach ($results as $note) {
+                $order_note[]  = array(
+                    'note_id'      => isset($note->comment_ID) ? esc_html($note->comment_ID) : '',
+                    'note_date'    => isset($note->comment_date) ? esc_html($note->comment_date) : '',
+                    'note_author'  => isset($note->comment_author) ? esc_html($note->comment_author) : '',
+                    'note_content' => isset($note->comment_content) ? esc_html($note->comment_content) : '',
+                );
+            }
         }
         return $order_note;
     }
@@ -1160,9 +1165,9 @@ class TCPG_Gateway extends WC_Payment_Gateway
                 foreach ($order_notes as $note) {
                     $note_date = esc_html($note['note_date']);
                     $note_content = esc_html($note['note_content']);
-                    ?>
+            ?>
                     <p><strong><?php esc_html_e(date('F j, Y h:i A', strtotime($note_date)), 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($note_content, 'wc-tp-payment-gateway'); ?></p>
-                    <?php
+            <?php
                 }
             }
         }
@@ -1434,42 +1439,42 @@ function tcpg_payment_gateway_disable_tazapay($available_gateways)
     return $available_gateways;
 }
 
-add_action('wp_ajax_setting_optionsave', 'tcpg_setting_optionsave');
-function tcpg_setting_optionsave()
-{
-    $woocommerce_tz_tazapay_settings                = get_option('woocommerce_tz_tazapay_settings');
-    $woocommerce_tz_tazapay_sandboxmode             = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
-    $woocommerce_tz_tazapay_seller_email            = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
+// add_action('wp_ajax_setting_optionsave', 'tcpg_setting_optionsave');
+// function tcpg_setting_optionsave()
+// {
+//     $woocommerce_tz_tazapay_settings                = get_option('woocommerce_tz_tazapay_settings');
+//     $woocommerce_tz_tazapay_sandboxmode             = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
+//     $woocommerce_tz_tazapay_seller_email            = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
 
-    global $wpdb;
-    $tablename = $wpdb->prefix . 'tazapay_user';
+//     global $wpdb;
+//     $tablename = $wpdb->prefix . 'tazapay_user';
 
-    $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $woocommerce_tz_tazapay_seller_email . "' AND environment = '" . $woocommerce_tz_tazapay_sandboxmode . "'");
-    $account_id = !empty($seller_results[0]->account_id) ? esc_html($seller_results[0]->account_id) : '';
+//     $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $woocommerce_tz_tazapay_seller_email . "' AND environment = '" . $woocommerce_tz_tazapay_sandboxmode . "'");
+//     $account_id = !empty($seller_results[0]->account_id) ? esc_html($seller_results[0]->account_id) : '';
 
-    $woocommerce_tz_tazapay_settings['title']                    = sanitize_text_field($_POST['woocommerce_tz_tazapay_title']);
-    $woocommerce_tz_tazapay_settings['sandboxmode']              = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
-    $woocommerce_tz_tazapay_settings['sandbox_api_key']          = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_key']);
-    $woocommerce_tz_tazapay_settings['sandbox_api_secret_key']   = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_secret_key']);
-    $woocommerce_tz_tazapay_settings['live_api_key']             = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_key']);
-    $woocommerce_tz_tazapay_settings['live_api_secret_key']      = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_secret_key']);
+//     $woocommerce_tz_tazapay_settings['title']                    = sanitize_text_field($_POST['woocommerce_tz_tazapay_title']);
+//     $woocommerce_tz_tazapay_settings['sandboxmode']              = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
+//     $woocommerce_tz_tazapay_settings['sandbox_api_key']          = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_key']);
+//     $woocommerce_tz_tazapay_settings['sandbox_api_secret_key']   = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_secret_key']);
+//     $woocommerce_tz_tazapay_settings['live_api_key']             = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_key']);
+//     $woocommerce_tz_tazapay_settings['live_api_secret_key']      = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_secret_key']);
 
-    if ($account_id) {
-        $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
-        $woocommerce_tz_tazapay_settings['seller_id']            = $account_id;
+//     if ($account_id) {
+//         $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
+//         $woocommerce_tz_tazapay_settings['seller_id']            = $account_id;
 
-        echo json_encode(array('account_id' => $account_id));
-    } else {
-        $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
-        $woocommerce_tz_tazapay_settings['seller_id']            = '';
+//         echo json_encode(array('account_id' => $account_id));
+//     } else {
+//         $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
+//         $woocommerce_tz_tazapay_settings['seller_id']            = '';
 
-        echo json_encode(array('account_id' => ''));
-    }
+//         echo json_encode(array('account_id' => ''));
+//     }
 
-    update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
+//     update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
 
-    die(0);
-}
+//     die(0);
+// }
 
 add_action('add_meta_boxes', 'tcpg_remove_shop_order_meta_boxe', 90);
 function tcpg_remove_shop_order_meta_boxe()
@@ -1585,11 +1590,11 @@ function tcpg_view_order_page($order_id)
         $order_notes = $request_api_call->tcpg_get_private_order_notes($order_id);
         if (isset($order_notes) && count($order_notes) > 1) {
             foreach ($order_notes as $note) {
-                $note_date     = esc_html($note['note_date']);
-                $note_content  = esc_html($note['note_content']);
+                $note_date     = isset($note['note_date']) ? esc_html($note['note_date']) : '';
+                $note_content  = isset($note['note_content']) ? esc_html($note['note_content']) : '';
         ?>
                 <p><strong><?php esc_html_e(date('F j, Y h:i A', strtotime($note_date)), 'wc-tp-payment-gateway'); ?></strong><?php esc_html_e($note_content, 'wc-tp-payment-gateway'); ?></p>
-        <?php
+<?php
             }
         }
     }

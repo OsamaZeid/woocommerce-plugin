@@ -33,18 +33,17 @@ class TCPG_User_List_Table extends WP_List_Table
 
         foreach ($results as $result) {
 
-            $first_name         = $result->first_name;
-            $last_name          = $result->last_name;
-            $user_type          = $result->user_type;
-            $contact_code       = $result->contact_code;
-            $contact_number     = $result->contact_number;
-            $country_name       = $result->country;
-            $ind_bus_type       = $result->ind_bus_type;
-            $business_name      = $result->business_name;
-            $partners_customer  = $result->partners_customer_id;
-            $created            = $result->created;
-            $environment        = $result->environment;
-            $account_id         = $result->account_id;
+            $first_name         = isset($result->first_name) ? esc_html( $result->first_name ) : '';
+            $last_name          = isset($result->last_name) ? esc_html( $result->last_name ) : '';
+            $user_type          = isset($result->user_type) ? esc_html( $result->user_type ) : '';
+            $contact_code       = isset($result->contact_code) ? esc_html( $result->contact_code ) : '';
+            $contact_number     = isset($result->contact_number) ? esc_html( $result->contact_number ) : '';
+            $country_name       = isset($result->country) ? esc_html( $result->country ) : '';
+            $ind_bus_type       = isset($result->ind_bus_type) ? esc_html( $result->ind_bus_type ) : '';
+            $business_name      = isset($result->business_name) ? esc_html( $result->business_name ) : '';
+            $created            = isset($result->created) ? esc_html( $result->created ) : '';
+            $environment        = isset($result->environment) ? esc_html( $result->environment ) : '';
+            $account_id         = isset($result->account_id) ? esc_html( $result->account_id ) : '';
             $countryName        = WC()->countries->countries[$country_name];
 
             if ($account_id) {
@@ -61,7 +60,6 @@ class TCPG_User_List_Table extends WP_List_Table
                     'ind_bus_type'      => $ind_bus_type,
                     'created'           => $created,
                     'business_name'     => $business_name,
-                    'partners_customer' => $partners_customer,
                     'environment'       => $environment,
                 );
             }
@@ -251,7 +249,7 @@ function tcpg_render_list_page()
 function tcpg_render_edit_page()
 {
     global $wpdb;
-    $user_id    = sanitize_text_field($_GET['user']);
+    $user_id    = isset($_GET['user']) ? sanitize_text_field($_GET['user']) : '';
     $tablename  = $wpdb->prefix . 'tazapay_user';
     $row_user   = $wpdb->get_row("SELECT * FROM $tablename WHERE id = '" . $user_id . "'");
 
@@ -262,7 +260,7 @@ function tcpg_render_edit_page()
             $account_id = $row_user->account_id;
 
             if (isset($_POST['submit'])) {
-                $new_value = sanitize_text_field($_POST['account_id']);
+                $new_value = isset($_POST['account_id']) ? sanitize_text_field($_POST['account_id']) : '';
                 $wpdb->query($wpdb->prepare("UPDATE $tablename SET account_id = %s WHERE ID = %s", $new_value, $user_id));
                 $success = true;
             }
