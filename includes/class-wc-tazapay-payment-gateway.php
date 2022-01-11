@@ -166,13 +166,6 @@ class TCPG_Gateway extends WC_Payment_Gateway
                 'description' => __('Please select the plugin you use to manage vendors (sellers) on your platform', 'wc-tp-payment-gateway'),
                 'class'       => 'tazapay-multiseller'
             ),
-            // 'enabled' => array(
-            //     'title'       => __('Enable Tazapay Payments', 'wc-tp-payment-gateway'),
-            //     'type'        => 'checkbox',
-            //     'description' => __('Check this to enable checkout with Tazapay', 'wc-tp-payment-gateway'),
-            //     'default'     => 'yes',
-            //     'class'       => ''
-            // ),
             'seller_id' => array(
                 'type'        => 'hidden',
                 'class'       => 'tazapay-singleseller'
@@ -1438,43 +1431,6 @@ function tcpg_payment_gateway_disable_tazapay($available_gateways)
     }
     return $available_gateways;
 }
-
-// add_action('wp_ajax_setting_optionsave', 'tcpg_setting_optionsave');
-// function tcpg_setting_optionsave()
-// {
-//     $woocommerce_tz_tazapay_settings                = get_option('woocommerce_tz_tazapay_settings');
-//     $woocommerce_tz_tazapay_sandboxmode             = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
-//     $woocommerce_tz_tazapay_seller_email            = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
-
-//     global $wpdb;
-//     $tablename = $wpdb->prefix . 'tazapay_user';
-
-//     $seller_results = $wpdb->get_results("SELECT * FROM $tablename WHERE email = '" . $woocommerce_tz_tazapay_seller_email . "' AND environment = '" . $woocommerce_tz_tazapay_sandboxmode . "'");
-//     $account_id = !empty($seller_results[0]->account_id) ? esc_html($seller_results[0]->account_id) : '';
-
-//     $woocommerce_tz_tazapay_settings['title']                    = sanitize_text_field($_POST['woocommerce_tz_tazapay_title']);
-//     $woocommerce_tz_tazapay_settings['sandboxmode']              = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandboxmode']);
-//     $woocommerce_tz_tazapay_settings['sandbox_api_key']          = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_key']);
-//     $woocommerce_tz_tazapay_settings['sandbox_api_secret_key']   = sanitize_text_field($_POST['woocommerce_tz_tazapay_sandbox_api_secret_key']);
-//     $woocommerce_tz_tazapay_settings['live_api_key']             = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_key']);
-//     $woocommerce_tz_tazapay_settings['live_api_secret_key']      = sanitize_text_field($_POST['woocommerce_tz_tazapay_live_api_secret_key']);
-
-//     if ($account_id) {
-//         $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
-//         $woocommerce_tz_tazapay_settings['seller_id']            = $account_id;
-
-//         echo json_encode(array('account_id' => $account_id));
-//     } else {
-//         $woocommerce_tz_tazapay_settings['seller_email']         = sanitize_email($_POST['woocommerce_tz_tazapay_seller_email']);
-//         $woocommerce_tz_tazapay_settings['seller_id']            = '';
-
-//         echo json_encode(array('account_id' => ''));
-//     }
-
-//     update_option('woocommerce_tz_tazapay_settings', $woocommerce_tz_tazapay_settings);
-
-//     die(0);
-// }
 
 add_action('add_meta_boxes', 'tcpg_remove_shop_order_meta_boxe', 90);
 function tcpg_remove_shop_order_meta_boxe()
